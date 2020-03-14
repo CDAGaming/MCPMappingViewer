@@ -22,42 +22,38 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.prefs.Preferences;
 
-public class AppVersionChecker
-{
-    private URL               versionURL;
-    private final String      appName;
-    private String            newVersion;
-    private final String      currentVersion;
-    private String            updateURL;
-    private String[]          logMsg;
-    private String[]          dialogMsg;
+public class AppVersionChecker {
+    private final String appName;
+    private final String currentVersion;
     private final Preferences versionCheckTracker;
-    private final String      LAST_VERSION_FOUND  = "lastversionfound";
-    private final String      RUNS_SINCE_LAST_MSG = "runs_since_last_message";
-    private final String      CHECK_ERROR         = "check_error";
-    private String            lastNewVersionFound;
-    private final boolean     errorDetected;
-    private int               runsSinceLastMessage;
+    private final String LAST_VERSION_FOUND = "lastversionfound";
+    private final String RUNS_SINCE_LAST_MSG = "runs_since_last_message";
+    private final String CHECK_ERROR = "check_error";
+    private final boolean errorDetected;
+    private URL versionURL;
+    private String newVersion;
+    private String updateURL;
+    private String[] logMsg;
+    private String[] dialogMsg;
+    private String lastNewVersionFound;
+    private int runsSinceLastMessage;
 
-    public AppVersionChecker(String appName, String currentVersion, String versionURL, String updateURL, String[] logMsg, String[] dialogMsg, int timeoutMS)
-    {
+    public AppVersionChecker(String appName, String currentVersion, String versionURL, String updateURL, String[] logMsg, String[] dialogMsg, int timeoutMS) {
         this.appName = appName;
         this.currentVersion = currentVersion;
         this.updateURL = updateURL;
         this.logMsg = logMsg;
         this.dialogMsg = dialogMsg;
 
-        try
-        {
+        try {
             if (versionURL.startsWith("http://dl.dropboxusercontent.com"))
                 versionURL = versionURL.replaceFirst("http", "https");
 
             this.versionURL = new URL(versionURL);
+        } catch (Throwable ignore) {
         }
-        catch (Throwable ignore)
-        {}
 
-        String[] versionLines = loadTextFromURL(this.versionURL, new String[] { CHECK_ERROR }, timeoutMS);
+        String[] versionLines = loadTextFromURL(this.versionURL, new String[]{CHECK_ERROR}, timeoutMS);
 
         if ((versionLines.length == 0) || versionLines[0].trim().equals("<html>"))
             newVersion = CHECK_ERROR;
@@ -78,12 +74,10 @@ public class AppVersionChecker
         if (errorDetected)
             newVersion = lastNewVersionFound;
 
-        if (!errorDetected && !isCurrentVersion(lastNewVersionFound, newVersion))
-        {
+        if (!errorDetected && !isCurrentVersion(lastNewVersionFound, newVersion)) {
             runsSinceLastMessage = 0;
             lastNewVersionFound = newVersion;
-        }
-        else
+        } else
             runsSinceLastMessage = runsSinceLastMessage % 10;
 
         versionCheckTracker.putInt(RUNS_SINCE_LAST_MSG, runsSinceLastMessage + 1);
@@ -97,28 +91,55 @@ public class AppVersionChecker
         setDialogMessage(dialogMsg);
     }
 
-    public AppVersionChecker(String appName, String oldVer, String versionURL, String updateURL)
-    {
-        this(appName, oldVer, versionURL, updateURL, new String[] { "{appName} {oldVer} is out of date! Visit {updateURL} to download the latest release ({newVer})." }, new String[] { "{appName} {newVer} is out! Download the latest from {updateURL}" }, 5000);
+    public AppVersionChecker(String appName, String oldVer, String versionURL, String updateURL) {
+        this(appName, oldVer, versionURL, updateURL, new String[]{"{appName} {oldVer} is out of date! Visit {updateURL} to download the latest release ({newVer})."}, new String[]{"{appName} {newVer} is out! Download the latest from {updateURL}"}, 5000);
     }
 
-    public void checkVersionWithLogging()
-    {
+    public static boolean isCurrentVersion(String currentVersion, String newVersion) {
+        return new NaturalOrderComparator().compare(currentVersion, newVersion) >= 0;
+    }
+
+    public static String[] loadTextFromURL(URL url, String[] defaultValue, int timeoutMS) {
+        List<String> arraylist = new ArrayList<>();
+        Scanner scanner;
+        try {
+            URLConnection uc = url.openConnection();
+            uc.setReadTimeout(timeoutMS);
+            uc.setConnectTimeout(timeoutMS);
+            scanner = new Scanner(uc.getInputStream(), "UTF-8");
+        } catch (Throwable e) {
+            return defaultValue;
+        }
+
+        while (scanner.hasNextLine()) {
+            arraylist.add(scanner.nextLine());
+        }
+        scanner.close();
+        return arraylist.toArray(new String[0]);
+    }
+
+    public void checkVersionWithLogging() {
         if (!isCurrentVersion(currentVersion, newVersion))
             for (String msg : logMsg)
                 System.out.println(msg);
     }
 
-    public void setLogMessage(String[] logMsg)
-    {
+    public String[] getLogMessage() {
+        return logMsg;
+    }
+
+    public void setLogMessage(String[] logMsg) {
         this.logMsg = logMsg;
 
         for (int i = 0; i < this.logMsg.length; i++)
             this.logMsg[i] = replaceAllTags(this.logMsg[i]);
     }
 
-    public void setDialogMessage(String[] dialogMsg)
-    {
+    public String[] getDialogMessage() {
+        return dialogMsg;
+    }
+
+    public void setDialogMessage(String[] dialogMsg) {
         this.dialogMsg = dialogMsg;
 
         for (int i = 0; i < this.dialogMsg.length; i++)
@@ -126,52 +147,11 @@ public class AppVersionChecker
 
     }
 
-    public String[] getLogMessage()
-    {
-        return logMsg;
-    }
-
-    public String[] getDialogMessage()
-    {
-        return dialogMsg;
-    }
-
-    public boolean isCurrentVersion()
-    {
+    public boolean isCurrentVersion() {
         return isCurrentVersion(runsSinceLastMessage == 0 ? currentVersion : lastNewVersionFound, newVersion);
     }
 
-    public static boolean isCurrentVersion(String currentVersion, String newVersion)
-    {
-        return new NaturalOrderComparator().compare(currentVersion, newVersion) >= 0;
-    }
-
-    private String replaceAllTags(String s)
-    {
+    private String replaceAllTags(String s) {
         return s.replace("{oldVer}", currentVersion).replace("{newVer}", newVersion).replace("{appName}", appName).replace("{updateURL}", updateURL);
-    }
-
-    public static String[] loadTextFromURL(URL url, String[] defaultValue, int timeoutMS)
-    {
-        List<String> arraylist = new ArrayList<>();
-        Scanner scanner;
-        try
-        {
-            URLConnection uc = url.openConnection();
-            uc.setReadTimeout(timeoutMS);
-            uc.setConnectTimeout(timeoutMS);
-            scanner = new Scanner(uc.getInputStream(), "UTF-8");
-        }
-        catch (Throwable e)
-        {
-            return defaultValue;
-        }
-
-        while (scanner.hasNextLine())
-        {
-            arraylist.add(scanner.nextLine());
-        }
-        scanner.close();
-        return arraylist.toArray(new String[0]);
     }
 }

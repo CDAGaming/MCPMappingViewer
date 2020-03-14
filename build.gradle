@@ -1,4 +1,3 @@
-
 plugins {
     id 'java'
     id 'eclipse'
@@ -74,7 +73,7 @@ createExe {
 }
 
 task run(type: JavaExec) {
-  classpath = sourceSets.main.runtimeClasspath
+    classpath = sourceSets.main.runtimeClasspath
 
-  main = mainClassName
+    main = mainClassName
 }

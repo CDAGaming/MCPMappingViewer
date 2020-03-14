@@ -16,63 +16,43 @@
  */
 package bspkrs.mmv;
 
+import bspkrs.mmv.McpBotCommand.MemberType;
+import bspkrs.mmv.gui.MappingGui;
 import immibis.bon.IProgressListener;
 
+import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableModel;
 import java.io.File;
 import java.io.IOException;
 import java.security.DigestException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
+public class McpMappingLoader {
 
-import bspkrs.mmv.McpBotCommand.MemberType;
-import bspkrs.mmv.gui.MappingGui;
-
-public class McpMappingLoader
-{
-
-    public static class CantLoadMCPMappingException extends Exception
-    {
-        private static final long serialVersionUID = 1;
-
-        public CantLoadMCPMappingException(String reason)
-        {
-            super(reason);
-        }
-    }
-
-    private final File                                   baseDir                 = new File(new File(System.getProperty("user.home")), ".cache/MCPMappingViewer");
-    private final String                                 baseSrgDir              = "{mc_ver}";
-    private final String                                 baseMappingDir          = "{mc_ver}/{channel}_{map_ver}";
-    private final String                                 baseMappingUrl          = "http://export.mcpbot.bspk.rs/mcp_{channel}/{map_ver}-{mc_ver}/mcp_{channel}-{map_ver}-{mc_ver}.zip";
-    private final String                                 newBaseSrgUrl           = "https://files.minecraftforge.net/maven/de/oceanlabs/mcp/mcp_config/{mc_ver}/mcp_config-{mc_ver}.zip";
-    private final String                                 oldBaseSrgUrl           = "http://export.mcpbot.bspk.rs/mcp/{mc_ver}/mcp-{mc_ver}-srg.zip";
-
-    private final File                                   srgDir;
-    private final File                                   mappingDir;
-    private final File                                   srgFile;
-    private final File                                   excFile;
-    private final File                                   staticMethodsFile;
-    private SrgFile                                      srgFileData;
-    private ExcFile                                      excFileData;
-    private StaticMethodsFile                            staticMethods;
-    private CsvFile                                      csvFieldData, csvMethodData;
-    private ParamCsvFile                                 csvParamData;
-    private final MappingGui                             parentGui;
-    private final Map<String, McpBotCommand>             commandMap              = new TreeMap<>();                                                                // srgName -> McpBotCommand
-    public final Map<MethodSrgData, CsvData>             srgMethodData2CsvData   = new TreeMap<>();
-    public final Map<FieldSrgData, CsvData>              srgFieldData2CsvData    = new TreeMap<>();
+    public final Map<MethodSrgData, CsvData> srgMethodData2CsvData = new TreeMap<>();
+    public final Map<FieldSrgData, CsvData> srgFieldData2CsvData = new TreeMap<>();
     public final Map<ExcData, Map<String, ParamCsvData>> excData2MapParamCsvData = new TreeMap<>();
-
-    public McpMappingLoader(MappingGui parentGui, String mappingString, IProgressListener progress) throws IOException, CantLoadMCPMappingException, NoSuchAlgorithmException, DigestException
-    {
+    private final File baseDir = new File(new File(System.getProperty("user.home")), ".cache/MCPMappingViewer");
+    private final String baseSrgDir = "{mc_ver}";
+    private final String baseMappingDir = "{mc_ver}/{channel}_{map_ver}";
+    private final String baseMappingUrl = "http://export.mcpbot.bspk.rs/mcp_{channel}/{map_ver}-{mc_ver}/mcp_{channel}-{map_ver}-{mc_ver}.zip";
+    private final String newBaseSrgUrl = "https://files.minecraftforge.net/maven/de/oceanlabs/mcp/mcp_config/{mc_ver}/mcp_config-{mc_ver}.zip";
+    private final String oldBaseSrgUrl = "http://export.mcpbot.bspk.rs/mcp/{mc_ver}/mcp-{mc_ver}-srg.zip";
+    private final File srgDir;
+    private final File mappingDir;
+    private final File srgFile;
+    private final File excFile;
+    private final File staticMethodsFile;
+    private final MappingGui parentGui;
+    private final Map<String, McpBotCommand> commandMap = new TreeMap<>();                                                                // srgName -> McpBotCommand
+    private SrgFile srgFileData;
+    private ExcFile excFileData;
+    private StaticMethodsFile staticMethods;
+    private CsvFile csvFieldData, csvMethodData;
+    private ParamCsvFile csvParamData;
+    public McpMappingLoader(MappingGui parentGui, String mappingString, IProgressListener progress) throws IOException, CantLoadMCPMappingException, NoSuchAlgorithmException, DigestException {
         progress.setMax(6);
         progress.set(0);
         this.parentGui = parentGui;
@@ -116,8 +96,7 @@ public class McpMappingLoader
         linkExcDataToSetParamCsvData();
     }
 
-    private File getSubDirForZip(String[] tokens, String baseZipUrl, String baseSubDir) throws CantLoadMCPMappingException, NoSuchAlgorithmException, DigestException, IOException
-    {
+    private File getSubDirForZip(String[] tokens, String baseZipUrl, String baseSubDir) throws CantLoadMCPMappingException, NoSuchAlgorithmException, DigestException, IOException {
         if (!baseDir.exists() && !baseDir.mkdirs())
             throw new CantLoadMCPMappingException("Application data folder does not exist and cannot be created.");
 
@@ -131,13 +110,11 @@ public class McpMappingLoader
         return subDir;
     }
 
-    private String replaceTokens(String s, String[] tokens)
-    {
+    private String replaceTokens(String s, String[] tokens) {
         return s.replace("{mc_ver}", tokens[0]).replace("{channel}", tokens[1]).replace("{map_ver}", tokens[2]);
     }
 
-    private void loadSrgMapping(boolean newFormat) throws IOException
-    {
+    private void loadSrgMapping(boolean newFormat) throws IOException {
         staticMethods = new StaticMethodsFile(staticMethodsFile);
         excFileData = new ExcFile(excFile);
         srgFileData = newFormat
@@ -145,77 +122,58 @@ public class McpMappingLoader
                 : new SrgFile(srgFile, excFileData, staticMethods);
     }
 
-    private void loadCsvMapping() throws IOException
-    {
+    private void loadCsvMapping() throws IOException {
         csvFieldData = new CsvFile(new File(mappingDir, "fields.csv"));
         csvMethodData = new CsvFile(new File(mappingDir, "methods.csv"));
         csvParamData = new ParamCsvFile(new File(mappingDir, "params.csv"));
     }
 
-    private void linkSrgDataToCsvData()
-    {
-        for (Entry<String, MethodSrgData> methodData : srgFileData.srgMethodName2MethodData.entrySet())
-        {
-            if (!srgMethodData2CsvData.containsKey(methodData.getValue()) && csvMethodData.hasCsvDataForKey(methodData.getKey()))
-            {
+    private void linkSrgDataToCsvData() {
+        for (Entry<String, MethodSrgData> methodData : srgFileData.srgMethodName2MethodData.entrySet()) {
+            if (!srgMethodData2CsvData.containsKey(methodData.getValue()) && csvMethodData.hasCsvDataForKey(methodData.getKey())) {
                 srgMethodData2CsvData.put(methodData.getValue(), csvMethodData.getCsvDataForKey(methodData.getKey()));
-            }
-            else if (srgMethodData2CsvData.containsKey(methodData.getValue()))
+            } else if (srgMethodData2CsvData.containsKey(methodData.getValue()))
                 System.out.println("SRG method " + methodData.getKey() + " has multiple entries in CSV file!");
         }
 
-        for (Entry<String, FieldSrgData> fieldData : srgFileData.srgFieldName2FieldData.entrySet())
-        {
-            if (!srgFieldData2CsvData.containsKey(fieldData.getValue()) && csvFieldData.hasCsvDataForKey(fieldData.getKey()))
-            {
+        for (Entry<String, FieldSrgData> fieldData : srgFileData.srgFieldName2FieldData.entrySet()) {
+            if (!srgFieldData2CsvData.containsKey(fieldData.getValue()) && csvFieldData.hasCsvDataForKey(fieldData.getKey())) {
                 srgFieldData2CsvData.put(fieldData.getValue(), csvFieldData.getCsvDataForKey(fieldData.getKey()));
-            }
-            else if (srgFieldData2CsvData.containsKey(fieldData.getValue()))
+            } else if (srgFieldData2CsvData.containsKey(fieldData.getValue()))
                 System.out.println("SRG field " + fieldData.getKey() + " has multiple entries in CSV file!");
         }
     }
 
-    private void linkExcDataToSetParamCsvData()
-    {
-        for (Entry<String, ExcData> excData : excFileData.srgMethodName2ExcData.entrySet())
-        {
-            if (!excData2MapParamCsvData.containsKey(excData.getValue()) && excData.getValue().getParameters().length > 0)
-            {
+    private void linkExcDataToSetParamCsvData() {
+        for (Entry<String, ExcData> excData : excFileData.srgMethodName2ExcData.entrySet()) {
+            if (!excData2MapParamCsvData.containsKey(excData.getValue()) && excData.getValue().getParameters().length > 0) {
                 TreeMap<String, ParamCsvData> params = new TreeMap<>();
                 for (String srgName : excData.getValue().getParameters())
                     if (csvParamData.hasCsvDataForKey(srgName))
                         params.put(srgName, csvParamData.getCsvDataForKey(srgName));
 
                 excData2MapParamCsvData.put(excData.getValue(), params);
-            }
-            else if (excData2MapParamCsvData.containsKey(excData.getValue()))
+            } else if (excData2MapParamCsvData.containsKey(excData.getValue()))
                 System.out.println("EXC method param " + excData.getKey() + " has multiple entries in CSV file!");
         }
     }
 
     private CsvData processMemberDataEdit(MemberType type, Map<String, ? extends MemberSrgData> srg2MemberData,
-            Map<? extends MemberSrgData, CsvData> memberData2CsvData,
-            String srgName, String mcpName, String comment)
-    {
+                                          Map<? extends MemberSrgData, CsvData> memberData2CsvData,
+                                          String srgName, String mcpName, String comment) {
         MemberSrgData memberData = srg2MemberData.get(srgName);
         CsvData csvData = null;
 
-        if (memberData != null)
-        {
+        if (memberData != null) {
             boolean isForced = memberData2CsvData.containsKey(memberData);
-            if (isForced)
-            {
+            if (isForced) {
                 csvData = memberData2CsvData.get(memberData);
-                if (!mcpName.trim().equals(csvData.getMcpName()) || !comment.trim().equals(csvData.getComment()))
-                {
+                if (!mcpName.trim().equals(csvData.getMcpName()) || !comment.trim().equals(csvData.getComment())) {
                     csvData.setMcpName(mcpName.trim());
                     csvData.setComment(comment.trim());
-                }
-                else
+                } else
                     return null;
-            }
-            else
-            {
+            } else {
                 csvData = new CsvData(srgName, mcpName.trim(), 2, comment.trim());
             }
 
@@ -225,8 +183,7 @@ public class McpMappingLoader
         return csvData;
     }
 
-    public String getBotCommands(boolean clear)
-    {
+    public String getBotCommands(boolean clear) {
         StringBuilder r = new StringBuilder();
 
         for (McpBotCommand command : commandMap.values())
@@ -238,18 +195,15 @@ public class McpMappingLoader
         return r.toString();
     }
 
-    public boolean hasPendingCommands()
-    {
+    public boolean hasPendingCommands() {
         return !commandMap.isEmpty();
     }
 
-    public TableModel getSearchResults(String input, IProgressListener progress)
-    {
+    public TableModel getSearchResults(String input, IProgressListener progress) {
         if (input == null || input.trim().isEmpty())
             return getClassModel();
 
-        if (progress != null)
-        {
+        if (progress != null) {
             progress.setMax(3);
             progress.set(0);
         }
@@ -265,15 +219,11 @@ public class McpMappingLoader
             progress.set(1);
 
         // Search Methods
-        for (Entry<ClassSrgData, Set<MethodSrgData>> entry : srgFileData.class2MethodDataSet.entrySet())
-        {
-            if (!results.contains(entry.getKey()))
-            {
-                for (MethodSrgData methodData : entry.getValue())
-                {
+        for (Entry<ClassSrgData, Set<MethodSrgData>> entry : srgFileData.class2MethodDataSet.entrySet()) {
+            if (!results.contains(entry.getKey())) {
+                for (MethodSrgData methodData : entry.getValue()) {
                     CsvData csv = srgMethodData2CsvData.get(methodData);
-                    if (methodData.contains(input) || csv != null && csv.contains(input))
-                    {
+                    if (methodData.contains(input) || csv != null && csv.contains(input)) {
                         results.add(entry.getKey());
                         break;
                     }
@@ -285,15 +235,11 @@ public class McpMappingLoader
             progress.set(2);
 
         // Search Fields
-        for (Entry<ClassSrgData, Set<FieldSrgData>> entry : srgFileData.class2FieldDataSet.entrySet())
-        {
-            if (!results.contains(entry.getKey()))
-            {
-                for (FieldSrgData fieldData : entry.getValue())
-                {
+        for (Entry<ClassSrgData, Set<FieldSrgData>> entry : srgFileData.class2FieldDataSet.entrySet()) {
+            if (!results.contains(entry.getKey())) {
+                for (FieldSrgData fieldData : entry.getValue()) {
                     CsvData csv = srgFieldData2CsvData.get(fieldData);
-                    if (fieldData.contains(input) || csv != null && csv.contains(input))
-                    {
+                    if (fieldData.contains(input) || csv != null && csv.contains(input)) {
                         results.add(entry.getKey());
                         break;
                     }
@@ -304,51 +250,52 @@ public class McpMappingLoader
         return new ClassModel(results);
     }
 
-    public TableModel getClassModel()
-    {
+    public TableModel getClassModel() {
         return new ClassModel(srgFileData.srgClassName2ClassData.values());
     }
 
-    public TableModel getMethodModel(String srgPkgAndOwner)
-    {
+    public TableModel getMethodModel(String srgPkgAndOwner) {
         ClassSrgData classData = srgFileData.srgClassName2ClassData.get(srgPkgAndOwner);
         return new MethodModel(srgFileData.class2MethodDataSet.get(classData));
     }
 
-    public TableModel getParamModel(String srgMethodName)
-    {
+    public TableModel getParamModel(String srgMethodName) {
         if (excFileData.srgMethodName2ExcData.containsKey(srgMethodName))
             return new ParamModel(excFileData.srgMethodName2ExcData.get(srgMethodName));
         else
             return MappingGui.paramsDefaultModel;
     }
 
-    public TableModel getFieldModel(String srgPkgAndOwner)
-    {
+    public TableModel getFieldModel(String srgPkgAndOwner) {
         ClassSrgData classData = srgFileData.srgClassName2ClassData.get(srgPkgAndOwner);
         return new FieldModel(srgFileData.class2FieldDataSet.get(classData));
     }
 
+    public static class CantLoadMCPMappingException extends Exception {
+        private static final long serialVersionUID = 1;
+
+        public CantLoadMCPMappingException(String reason) {
+            super(reason);
+        }
+    }
+
     @SuppressWarnings("rawtypes")
-    public static class ClassModel extends AbstractTableModel
-    {
-        private static final long              serialVersionUID = 1L;
-        public final String[]                  columnNames      = { "Pkg name", "SRG name", "Obf name" };
-        private final Class[]                  columnTypes      = { String.class, String.class, String.class };
-        private final boolean[]                isColumnEditable = { false, false, false };
-        private final Object[][]               data;
+    public static class ClassModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
+        public final String[] columnNames = {"Pkg name", "SRG name", "Obf name"};
+        private final Class[] columnTypes = {String.class, String.class, String.class};
+        private final boolean[] isColumnEditable = {false, false, false};
+        private final Object[][] data;
         private final Collection<ClassSrgData> collectionRef;
 
-        public ClassModel(Collection<ClassSrgData> map)
-        {
+        public ClassModel(Collection<ClassSrgData> map) {
             collectionRef = map;
 
             data = new Object[collectionRef.size()][columnNames.length];
 
             int i = 0;
 
-            for (ClassSrgData classData : collectionRef)
-            {
+            for (ClassSrgData classData : collectionRef) {
                 data[i][0] = classData.getSrgPkgName();
                 data[i][1] = classData.getSrgName();
                 data[i][2] = classData.getObfName();
@@ -357,20 +304,17 @@ public class McpMappingLoader
         }
 
         @Override
-        public int getRowCount()
-        {
+        public int getRowCount() {
             return data.length;
         }
 
         @Override
-        public int getColumnCount()
-        {
+        public int getColumnCount() {
             return columnNames.length;
         }
 
         @Override
-        public String getColumnName(int columnIndex)
-        {
+        public String getColumnName(int columnIndex) {
             if (columnIndex < columnNames.length && columnIndex >= 0)
                 return columnNames[columnIndex];
 
@@ -378,8 +322,7 @@ public class McpMappingLoader
         }
 
         @Override
-        public Class<?> getColumnClass(int columnIndex)
-        {
+        public Class<?> getColumnClass(int columnIndex) {
             if (columnIndex < columnTypes.length && columnIndex >= 0)
                 return columnTypes[columnIndex];
 
@@ -387,8 +330,7 @@ public class McpMappingLoader
         }
 
         @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex)
-        {
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
             if (columnIndex < isColumnEditable.length && columnIndex >= 0)
                 return isColumnEditable[columnIndex];
 
@@ -396,40 +338,33 @@ public class McpMappingLoader
         }
 
         @Override
-        public Object getValueAt(int rowIndex, int columnIndex)
-        {
+        public Object getValueAt(int rowIndex, int columnIndex) {
             return data[rowIndex][Math.min(columnIndex, data[rowIndex].length - 1)];
         }
     }
 
     @SuppressWarnings("rawtypes")
-    public class MethodModel extends AbstractTableModel
-    {
-        private static final long        serialVersionUID = 1L;
-        private final String[]           columnNames      = { "MCP Name", "SRG Name", "Obf Name", "SRG Descriptor", "Comment" };
-        private final Class[]            columnTypes      = { String.class, String.class, String.class, String.class, String.class };
-        private final boolean[]          isColumnEditable = { true, false, false, false, true };
-        private final Object[][]         data;
+    public class MethodModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
+        private final String[] columnNames = {"MCP Name", "SRG Name", "Obf Name", "SRG Descriptor", "Comment"};
+        private final Class[] columnTypes = {String.class, String.class, String.class, String.class, String.class};
+        private final boolean[] isColumnEditable = {true, false, false, false, true};
+        private final Object[][] data;
         private final Set<MethodSrgData> setRef;
 
-        public MethodModel(Set<MethodSrgData> srgMethodSet)
-        {
+        public MethodModel(Set<MethodSrgData> srgMethodSet) {
             setRef = srgMethodSet;
 
             data = new Object[setRef.size()][columnNames.length];
 
             int i = 0;
 
-            for (MethodSrgData methodData : setRef)
-            {
+            for (MethodSrgData methodData : setRef) {
                 CsvData csvData = srgMethodData2CsvData.get(methodData);
-                if (csvData != null)
-                {
+                if (csvData != null) {
                     data[i][0] = csvData.getMcpName();
                     data[i][4] = csvData.getComment();
-                }
-                else
-                {
+                } else {
                     data[i][0] = "";
                     data[i][4] = "";
                 }
@@ -442,20 +377,17 @@ public class McpMappingLoader
         }
 
         @Override
-        public int getRowCount()
-        {
+        public int getRowCount() {
             return data.length;
         }
 
         @Override
-        public int getColumnCount()
-        {
+        public int getColumnCount() {
             return columnNames.length;
         }
 
         @Override
-        public String getColumnName(int columnIndex)
-        {
+        public String getColumnName(int columnIndex) {
             if (columnIndex < columnNames.length && columnIndex >= 0)
                 return columnNames[columnIndex];
 
@@ -463,8 +395,7 @@ public class McpMappingLoader
         }
 
         @Override
-        public Class<?> getColumnClass(int columnIndex)
-        {
+        public Class<?> getColumnClass(int columnIndex) {
             if (columnIndex < columnTypes.length && columnIndex >= 0)
                 return columnTypes[columnIndex];
 
@@ -472,8 +403,7 @@ public class McpMappingLoader
         }
 
         @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex)
-        {
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
             if (columnIndex < isColumnEditable.length && columnIndex >= 0)
                 return isColumnEditable[columnIndex];
 
@@ -481,14 +411,12 @@ public class McpMappingLoader
         }
 
         @Override
-        public Object getValueAt(int rowIndex, int columnIndex)
-        {
+        public Object getValueAt(int rowIndex, int columnIndex) {
             return data[rowIndex][Math.min(columnIndex, data[rowIndex].length - 1)];
         }
 
         @Override
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex)
-        {
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             data[rowIndex][columnIndex] = aValue;
 
             if (columnIndex == 4 && aValue != null && (data[rowIndex][0] == null || data[rowIndex][0].toString().trim().isEmpty()))
@@ -503,8 +431,7 @@ public class McpMappingLoader
 
             CsvData result = processMemberDataEdit(MemberType.METHOD, srgFileData.srgMethodName2MethodData, srgMethodData2CsvData, srgName, mcpName, comment);
 
-            if (result != null)
-            {
+            if (result != null) {
                 csvMethodData.updateCsvDataForKey(srgName, result);
                 srgMethodData2CsvData.put(srgFileData.srgMethodName2MethodData.get(srgName), result);
                 parentGui.setCsvFileEdited(true);
@@ -513,20 +440,17 @@ public class McpMappingLoader
     }
 
     @SuppressWarnings("rawtypes")
-    public class ParamModel extends AbstractTableModel
-    {
+    public class ParamModel extends AbstractTableModel {
         private static final long serialVersionUID = 1L;
-        private final String[]    columnNames      = { "MCP Name", "SRG Name", "Type" };
-        private final Class[]     columnTypes      = { String.class, String.class, String.class };
-        private final boolean[]   isColumnEditable = { true, false, false };
-        private final Object[][]  data;
+        private final String[] columnNames = {"MCP Name", "SRG Name", "Type"};
+        private final Class[] columnTypes = {String.class, String.class, String.class};
+        private final boolean[] isColumnEditable = {true, false, false};
+        private final Object[][] data;
 
-        public ParamModel(ExcData excData)
-        {
+        public ParamModel(ExcData excData) {
             data = new Object[excData.getParameters().length][columnNames.length];
 
-            for (int i = 0; i < excData.getParameters().length; i++)
-            {
+            for (int i = 0; i < excData.getParameters().length; i++) {
                 if (excData2MapParamCsvData.containsKey(excData) && excData2MapParamCsvData.get(excData).containsKey(excData.getParameters()[i]))
                     data[i][0] = excData2MapParamCsvData.get(excData).get(excData.getParameters()[i]).getMcpName();
                 else
@@ -539,20 +463,17 @@ public class McpMappingLoader
         }
 
         @Override
-        public int getRowCount()
-        {
+        public int getRowCount() {
             return data.length;
         }
 
         @Override
-        public int getColumnCount()
-        {
+        public int getColumnCount() {
             return columnNames.length;
         }
 
         @Override
-        public String getColumnName(int columnIndex)
-        {
+        public String getColumnName(int columnIndex) {
             if (columnIndex < columnNames.length && columnIndex >= 0)
                 return columnNames[columnIndex];
 
@@ -560,8 +481,7 @@ public class McpMappingLoader
         }
 
         @Override
-        public Class<?> getColumnClass(int columnIndex)
-        {
+        public Class<?> getColumnClass(int columnIndex) {
             if (columnIndex < columnTypes.length && columnIndex >= 0)
                 return columnTypes[columnIndex];
 
@@ -569,8 +489,7 @@ public class McpMappingLoader
         }
 
         @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex)
-        {
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
             if (columnIndex < isColumnEditable.length && columnIndex >= 0)
                 return isColumnEditable[columnIndex];
 
@@ -578,14 +497,12 @@ public class McpMappingLoader
         }
 
         @Override
-        public Object getValueAt(int rowIndex, int columnIndex)
-        {
+        public Object getValueAt(int rowIndex, int columnIndex) {
             return data[rowIndex][Math.min(columnIndex, data[rowIndex].length - 1)];
         }
 
         @Override
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex)
-        {
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             data[rowIndex][columnIndex] = aValue;
 
             String srgName = (String) data[rowIndex][1];
@@ -598,16 +515,13 @@ public class McpMappingLoader
             ParamCsvData csvData;
             boolean isForced = csvParamData.hasCsvDataForKey(srgName);
 
-            if (isForced)
-            {
+            if (isForced) {
                 csvData = csvParamData.getCsvDataForKey(srgName);
                 if (!mcpName.trim().equals(csvData.getMcpName()))
                     csvData.setMcpName(mcpName.trim());
                 else
                     return;
-            }
-            else
-            {
+            } else {
                 csvData = new ParamCsvData(srgName, mcpName, 2);
                 excData2MapParamCsvData.get(excData).put(srgName, csvData);
             }
@@ -620,33 +534,27 @@ public class McpMappingLoader
     }
 
     @SuppressWarnings("rawtypes")
-    public class FieldModel extends AbstractTableModel
-    {
-        private static final long       serialVersionUID = 1L;
-        private final String[]          columnNames      = { "MCP Name", "SRG Name", "Obf Name", "Comment" };
-        private final Class[]           columnTypes      = { String.class, String.class, String.class, String.class };
-        private final boolean[]         isColumnEditable = { true, false, false, true };
-        private final Object[][]        data;
+    public class FieldModel extends AbstractTableModel {
+        private static final long serialVersionUID = 1L;
+        private final String[] columnNames = {"MCP Name", "SRG Name", "Obf Name", "Comment"};
+        private final Class[] columnTypes = {String.class, String.class, String.class, String.class};
+        private final boolean[] isColumnEditable = {true, false, false, true};
+        private final Object[][] data;
         private final Set<FieldSrgData> setRef;
 
-        public FieldModel(Set<FieldSrgData> srgFieldSet)
-        {
+        public FieldModel(Set<FieldSrgData> srgFieldSet) {
             setRef = srgFieldSet;
 
             data = new Object[setRef.size()][columnNames.length];
 
             int i = 0;
 
-            for (FieldSrgData fieldData : setRef)
-            {
+            for (FieldSrgData fieldData : setRef) {
                 CsvData csvData = srgFieldData2CsvData.get(fieldData);
-                if (csvData != null)
-                {
+                if (csvData != null) {
                     data[i][0] = csvData.getMcpName();
                     data[i][3] = csvData.getComment();
-                }
-                else
-                {
+                } else {
                     data[i][0] = "";
                     data[i][3] = "";
                 }
@@ -658,20 +566,17 @@ public class McpMappingLoader
         }
 
         @Override
-        public int getRowCount()
-        {
+        public int getRowCount() {
             return data.length;
         }
 
         @Override
-        public int getColumnCount()
-        {
+        public int getColumnCount() {
             return columnNames.length;
         }
 
         @Override
-        public String getColumnName(int columnIndex)
-        {
+        public String getColumnName(int columnIndex) {
             if (columnIndex < columnNames.length && columnIndex >= 0)
                 return columnNames[columnIndex];
 
@@ -679,8 +584,7 @@ public class McpMappingLoader
         }
 
         @Override
-        public Class<?> getColumnClass(int columnIndex)
-        {
+        public Class<?> getColumnClass(int columnIndex) {
             if (columnIndex < columnTypes.length && columnIndex >= 0)
                 return columnTypes[columnIndex];
 
@@ -688,8 +592,7 @@ public class McpMappingLoader
         }
 
         @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex)
-        {
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
             if (columnIndex < isColumnEditable.length && columnIndex >= 0)
                 return isColumnEditable[columnIndex];
 
@@ -697,14 +600,12 @@ public class McpMappingLoader
         }
 
         @Override
-        public Object getValueAt(int rowIndex, int columnIndex)
-        {
+        public Object getValueAt(int rowIndex, int columnIndex) {
             return data[rowIndex][Math.min(columnIndex, data[rowIndex].length - 1)];
         }
 
         @Override
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex)
-        {
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             data[rowIndex][columnIndex] = aValue;
 
             if (columnIndex == 3 && aValue != null && (data[rowIndex][0] == null || data[rowIndex][0].toString().trim().isEmpty()))
@@ -719,8 +620,7 @@ public class McpMappingLoader
 
             CsvData result = processMemberDataEdit(MemberType.FIELD, srgFileData.srgFieldName2FieldData, srgFieldData2CsvData, srgName, mcpName, comment);
 
-            if (result != null)
-            {
+            if (result != null) {
                 csvFieldData.updateCsvDataForKey(srgName, result);
                 srgFieldData2CsvData.put(srgFileData.srgFieldName2FieldData.get(srgName), result);
                 parentGui.setCsvFileEdited(true);

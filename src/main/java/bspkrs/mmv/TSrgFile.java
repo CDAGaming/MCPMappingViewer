@@ -4,13 +4,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.util.*;
+import java.util.Scanner;
+import java.util.TreeSet;
 
-public class TSrgFile extends SrgFile
-{
+public class TSrgFile extends SrgFile {
 
-    public TSrgFile(File f, ExcFile excFile, StaticMethodsFile staticMethods) throws FileNotFoundException
-    {
+    public TSrgFile(File f, ExcFile excFile, StaticMethodsFile staticMethods) throws FileNotFoundException {
         try (Scanner in = new Scanner(new BufferedReader(new FileReader(f)))) {
             String currentPackage = null;
             String currentClass = null;

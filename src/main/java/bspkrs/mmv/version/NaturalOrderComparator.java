@@ -27,10 +27,16 @@ package bspkrs.mmv.version;
 
 import java.util.Comparator;
 
-public class NaturalOrderComparator implements Comparator<Object>
-{
-    int compareRight(String a, String b)
-    {
+public class NaturalOrderComparator implements Comparator<Object> {
+    static char charAt(String s, int i) {
+        if (i >= s.length()) {
+            return 0;
+        } else {
+            return s.charAt(i);
+        }
+    }
+
+    int compareRight(String a, String b) {
         int bias = 0;
         int ia = 0;
         int ib = 0;
@@ -39,45 +45,31 @@ public class NaturalOrderComparator implements Comparator<Object>
         // value wins, but we can't know that it will until we've scanned
         // both numbers to know that they have the same magnitude, so we
         // remember it in BIAS.
-        for (;; ia++, ib++)
-        {
+        for (; ; ia++, ib++) {
             char ca = charAt(a, ia);
             char cb = charAt(b, ib);
 
-            if (!Character.isDigit(ca) && !Character.isDigit(cb))
-            {
+            if (!Character.isDigit(ca) && !Character.isDigit(cb)) {
                 return bias;
-            }
-            else if (!Character.isDigit(ca))
-            {
+            } else if (!Character.isDigit(ca)) {
                 return -1;
-            }
-            else if (!Character.isDigit(cb))
-            {
+            } else if (!Character.isDigit(cb)) {
                 return +1;
-            }
-            else if (ca < cb)
-            {
-                if (bias == 0)
-                {
+            } else if (ca < cb) {
+                if (bias == 0) {
                     bias = -1;
                 }
-            }
-            else if (ca > cb)
-            {
+            } else if (ca > cb) {
                 if (bias == 0)
                     bias = +1;
-            }
-            else if (ca == 0 && cb == 0)
-            {
+            } else if (ca == 0 && cb == 0) {
                 return bias;
             }
         }
     }
 
     @Override
-    public int compare(Object o1, Object o2)
-    {
+    public int compare(Object o1, Object o2) {
         String a = o1.toString();
         String b = o2.toString();
 
@@ -86,8 +78,7 @@ public class NaturalOrderComparator implements Comparator<Object>
         char ca, cb;
         int result;
 
-        while (true)
-        {
+        while (true) {
             // only count the number of zeroes leading the last number compared
             nza = nzb = 0;
 
@@ -95,14 +86,10 @@ public class NaturalOrderComparator implements Comparator<Object>
             cb = charAt(b, ib);
 
             // skip over leading spaces or zeros
-            while (Character.isSpaceChar(ca) || ca == '0')
-            {
-                if (ca == '0')
-                {
+            while (Character.isSpaceChar(ca) || ca == '0') {
+                if (ca == '0') {
                     nza++;
-                }
-                else
-                {
+                } else {
                     // only count consecutive zeroes
                     nza = 0;
                 }
@@ -110,14 +97,10 @@ public class NaturalOrderComparator implements Comparator<Object>
                 ca = charAt(a, ++ia);
             }
 
-            while (Character.isSpaceChar(cb) || cb == '0')
-            {
-                if (cb == '0')
-                {
+            while (Character.isSpaceChar(cb) || cb == '0') {
+                if (cb == '0') {
                     nzb++;
-                }
-                else
-                {
+                } else {
                     // only count consecutive zeroes
                     nzb = 0;
                 }
@@ -126,44 +109,26 @@ public class NaturalOrderComparator implements Comparator<Object>
             }
 
             // process run of digits
-            if (Character.isDigit(ca) && Character.isDigit(cb))
-            {
-                if ((result = compareRight(a.substring(ia), b.substring(ib))) != 0)
-                {
+            if (Character.isDigit(ca) && Character.isDigit(cb)) {
+                if ((result = compareRight(a.substring(ia), b.substring(ib))) != 0) {
                     return result;
                 }
             }
 
-            if (ca == 0 && cb == 0)
-            {
+            if (ca == 0 && cb == 0) {
                 // The strings compare the same. Perhaps the caller
                 // will want to call strcmp to break the tie.
                 return nza - nzb;
             }
 
-            if (ca < cb)
-            {
+            if (ca < cb) {
                 return -1;
-            }
-            else if (ca > cb)
-            {
+            } else if (ca > cb) {
                 return +1;
             }
 
             ++ia;
             ++ib;
-        }
-    }
-
-    static char charAt(String s, int i)
-    {
-        if (i >= s.length())
-        {
-            return 0;
-        }
-        else
-        {
-            return s.charAt(i);
         }
     }
 }

@@ -21,34 +21,23 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Map;
-import java.util.Scanner;
-import java.util.Set;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import java.util.*;
 
-public class SrgFile
-{
+public class SrgFile {
     // All maps should be inter-connected to reference a single set of objects
-    public final Map<String, ClassSrgData>             srgClassName2ClassData   = new TreeMap<>();            // full/pkg/ClassSrgName -> ClassSrgData
-    public final Map<String, Set<ClassSrgData>>        srgPkg2ClassDataSet      = new TreeMap<>();            // full/pkg -> Set<ClassSrgData>
-    public final Map<String, FieldSrgData>             srgFieldName2FieldData   = new TreeMap<>();            // field_12345_a -> FieldSrgData
-    public final Map<String, MethodSrgData>            srgMethodName2MethodData = new TreeMap<>();            // func_12345_a -> MethodSrgData
-    public final Map<ClassSrgData, Set<MethodSrgData>> class2MethodDataSet      = new TreeMap<>();
-    public final Map<ClassSrgData, Set<FieldSrgData>>  class2FieldDataSet       = new TreeMap<>();
-    public final Map<String, ClassSrgData>             srgMethodName2ClassData  = new TreeMap<>();            // func_12345_a -> ClassSrgData
-    public final Map<String, ClassSrgData>             srgFieldName2ClassData   = new TreeMap<>();            // field_12345_a -> ClassSrgData
+    public final Map<String, ClassSrgData> srgClassName2ClassData = new TreeMap<>();            // full/pkg/ClassSrgName -> ClassSrgData
+    public final Map<String, Set<ClassSrgData>> srgPkg2ClassDataSet = new TreeMap<>();            // full/pkg -> Set<ClassSrgData>
+    public final Map<String, FieldSrgData> srgFieldName2FieldData = new TreeMap<>();            // field_12345_a -> FieldSrgData
+    public final Map<String, MethodSrgData> srgMethodName2MethodData = new TreeMap<>();            // func_12345_a -> MethodSrgData
+    public final Map<ClassSrgData, Set<MethodSrgData>> class2MethodDataSet = new TreeMap<>();
+    public final Map<ClassSrgData, Set<FieldSrgData>> class2FieldDataSet = new TreeMap<>();
+    public final Map<String, ClassSrgData> srgMethodName2ClassData = new TreeMap<>();            // func_12345_a -> ClassSrgData
+    public final Map<String, ClassSrgData> srgFieldName2ClassData = new TreeMap<>();            // field_12345_a -> ClassSrgData
 
-    SrgFile() {} // FIXME Needed so that TSrgFile can extend SrgFile. A shared interface/abstract probably makes more sense
+    SrgFile() {
+    } // FIXME Needed so that TSrgFile can extend SrgFile. A shared interface/abstract probably makes more sense
 
-    public static String getLastComponent(String s)
-    {
-        String[] parts = s.split("/");
-        return parts[parts.length - 1];
-    }
-
-    public SrgFile(File f, ExcFile excFile, StaticMethodsFile staticMethods) throws IOException
-    {
+    public SrgFile(File f, ExcFile excFile, StaticMethodsFile staticMethods) throws IOException {
         try (Scanner in = new Scanner(new BufferedReader(new FileReader(f)))) {
             while (in.hasNextLine()) {
                 if (in.hasNext("CL:")) {
@@ -122,5 +111,10 @@ public class SrgFile
                     in.nextLine();
             }
         }
+    }
+
+    public static String getLastComponent(String s) {
+        String[] parts = s.split("/");
+        return parts[parts.length - 1];
     }
 }

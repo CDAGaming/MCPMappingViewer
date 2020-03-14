@@ -15,56 +15,47 @@
  */
 package bspkrs.mmv;
 
-public class ParamCsvData implements Comparable<ParamCsvData>
-{
+public class ParamCsvData implements Comparable<ParamCsvData> {
     private final String srgName;
-    private String       mcpName;
-    private final int    side;
+    private final int side;
+    private String mcpName;
 
-    public ParamCsvData(String srgName, String mcpName, int side)
-    {
+    public ParamCsvData(String srgName, String mcpName, int side) {
         this.srgName = srgName;
         this.mcpName = mcpName;
         this.side = side;
     }
 
-    public String toCsv()
-    {
+    public String toCsv() {
         return srgName + "," + mcpName + "," + side;
     }
 
-    public String getSrgName()
-    {
+    public String getSrgName() {
         return srgName;
     }
 
-    public String getMcpName()
-    {
+    public String getMcpName() {
         return mcpName;
     }
 
-    public ParamCsvData setMcpName(String mcpName)
-    {
+    public ParamCsvData setMcpName(String mcpName) {
         this.mcpName = mcpName;
         return this;
     }
 
-    public int getSide()
-    {
+    public int getSide() {
         return side;
     }
 
     @Override
-    public int compareTo(ParamCsvData o)
-    {
+    public int compareTo(ParamCsvData o) {
         if (o != null)
             return srgName.compareTo(o.srgName);
 
         return 1;
     }
 
-    public boolean contains(String s)
-    {
+    public boolean contains(String s) {
         return mcpName.contains(s);
     }
 }

@@ -15,8 +15,7 @@
  */
 package immibis.bon;
 
-public interface IProgressListener
-{
+public interface IProgressListener {
     void start(int max, String text);
 
     void set(int value);

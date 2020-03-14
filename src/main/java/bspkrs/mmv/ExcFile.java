@@ -23,13 +23,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-public class ExcFile
-{
+public class ExcFile {
     public final Map<String, ExcData> srgMethodName2ExcData;
     public final Map<String, ExcData> srgParamName2ExcData;
 
-    public ExcFile(File f) throws IOException
-    {
+    public ExcFile(File f) throws IOException {
         srgMethodName2ExcData = new HashMap<>();
         srgParamName2ExcData = new HashMap<>();
         // example lines:
