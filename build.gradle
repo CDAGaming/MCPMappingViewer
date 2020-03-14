@@ -68,7 +68,7 @@ createExe {
     outfile = tasks.shadowJar.archiveName - '.jar' + '.exe'
     productName = 'MCP Mapping Viewer'
     icon = "${projectDir}/MCPMappingViewer.ico"
-    supportUrl = 'http://www.minecraftforum.net/topic/2115030-'
+    supportUrl = 'https://www.minecraftforum.net/topic/2115030-'
     copyright = 'Copyright 2013-2020 bspkrs, portions Copyright 2013 Alex "Immibis" Campbell'
 }
 

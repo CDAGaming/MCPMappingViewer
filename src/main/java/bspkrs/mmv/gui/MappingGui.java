@@ -48,9 +48,9 @@ public class MappingGui extends JFrame {
     // @formatter:off
     public static DefaultTableModel classesDefaultModel = new DefaultTableModel(new Object[][]{{},}, new String[]{"Pkg name", "SRG name", "Obf name"}) {
         private static final long serialVersionUID = 1L;
-        boolean[] columnEditables = new boolean[]{false, false, false};
+        final boolean[] columnEditables = new boolean[]{false, false, false};
         @SuppressWarnings("rawtypes")
-        Class[] columnTypes = new Class[]{String.class, String.class, String.class};
+        final Class[] columnTypes = new Class[]{String.class, String.class, String.class};
 
         @SuppressWarnings({"rawtypes"})
         @Override
@@ -65,9 +65,9 @@ public class MappingGui extends JFrame {
     };
     public static DefaultTableModel methodsDefaultModel = new DefaultTableModel(new Object[][]{{},}, new String[]{"MCP Name", "SRG Name", "Obf Name", "SRG Descriptor", "Comment"}) {
         private static final long serialVersionUID = 1L;
-        boolean[] columnEditables = new boolean[]{false, false, false, false, false};
+        final boolean[] columnEditables = new boolean[]{false, false, false, false, false};
         @SuppressWarnings("rawtypes")
-        Class[] columnTypes = new Class[]{String.class, String.class, String.class, String.class, String.class};
+        final Class[] columnTypes = new Class[]{String.class, String.class, String.class, String.class, String.class};
 
         @SuppressWarnings({"rawtypes"})
         @Override
@@ -82,9 +82,9 @@ public class MappingGui extends JFrame {
     };
     public static DefaultTableModel paramsDefaultModel = new DefaultTableModel(new Object[][]{{},}, new String[]{"MCP Name", "SRG Name", "Type"}) {
         private static final long serialVersionUID = 1L;
-        boolean[] columnEditables = new boolean[]{false, false, false};
+        final boolean[] columnEditables = new boolean[]{false, false, false};
         @SuppressWarnings("rawtypes")
-        Class[] columnTypes = new Class[]{String.class, String.class, String.class};
+        final Class[] columnTypes = new Class[]{String.class, String.class, String.class};
 
         @SuppressWarnings({"rawtypes"})
         @Override
@@ -99,9 +99,9 @@ public class MappingGui extends JFrame {
     };
     public static DefaultTableModel fieldsDefaultModel = new DefaultTableModel(new Object[][]{{},}, new String[]{"MCP Name", "SRG Name", "Obf Name", "Comment"}) {
         private static final long serialVersionUID = 1L;
-        boolean[] columnEditables = new boolean[]{false, false, false, false};
+        final boolean[] columnEditables = new boolean[]{false, false, false, false};
         @SuppressWarnings("rawtypes")
-        Class[] columnTypes = new Class[]{String.class, String.class, String.class, String.class};
+        final Class[] columnTypes = new Class[]{String.class, String.class, String.class, String.class};
 
         @SuppressWarnings({"rawtypes"})
         @Override
@@ -121,8 +121,7 @@ public class MappingGui extends JFrame {
     private final List<RowSorter.SortKey> fieldSort = new ArrayList<>();
     private final Map<String, McpMappingLoader> mcpInstances = new HashMap<>();
     private final VersionFetcher versionFetcher = new VersionFetcher();
-    private final String versionURL = "http://bspk.rs/Minecraft/MMV/MMV.version";
-    private final String mcfTopic = "http://www.minecraftforum.net/topic/2115030-";
+    private final String mcfTopic = "https://www.minecraftforum.net/topic/2115030-";
     private JFrame frmMcpMappingViewer;
     private JButton btnRefreshTables;
     private JComboBox<String> cmbMappingVersion;
@@ -140,9 +139,7 @@ public class MappingGui extends JFrame {
     private JTable tblParams;
     private Thread curTask = null;
     private McpMappingLoader currentLoader;
-    private AppVersionChecker versionChecker;
     private JSplitPane splitMethods;
-    private JButton btnGetVersions;
     // @formatter:on
 
     /**
@@ -302,7 +299,8 @@ public class MappingGui extends JFrame {
     }
 
     private void checkForUpdates() {
-        versionChecker = new AppVersionChecker("MCP Mapping Viewer", VERSION_NUMBER, versionURL, mcfTopic,
+        String versionURL = "http://bspk.rs/Minecraft/MMV/MMV.version";
+        AppVersionChecker versionChecker = new AppVersionChecker("MCP Mapping Viewer", VERSION_NUMBER, versionURL, mcfTopic,
                 new String[]{"{appName} {oldVer} is out of date! Visit {updateURL} to download the latest release ({newVer})."},
                 new String[]{
                         "{appName} {oldVer} is out of date! <br/><br/>Download the latest release ({newVer}) from <a href=\"{updateURL}\">{updateURL}</a>."},
@@ -436,7 +434,7 @@ public class MappingGui extends JFrame {
         pnlControls.add(lblMappingVersion);
         pnlControls.add(cmbMappingVersion);
 
-        btnGetVersions = new JButton("Get Versions");
+        JButton btnGetVersions = new JButton("Get Versions");
         btnGetVersions.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

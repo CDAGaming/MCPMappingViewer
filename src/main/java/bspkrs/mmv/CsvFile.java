@@ -29,14 +29,13 @@ public class CsvFile {
 
     public CsvFile(File file) throws IOException {
         this.file = file;
-        srgMemberName2CsvData = new TreeMap<String, CsvData>();
+        srgMemberName2CsvData = new TreeMap<>();
         readFromFile();
         isDirty = false;
     }
 
     public void readFromFile() throws IOException {
-        Scanner in = new Scanner(new BufferedReader(new FileReader(file)));
-        try {
+        try (Scanner in = new Scanner(new BufferedReader(new FileReader(file)))) {
             in.useDelimiter(",");
             headerLine = in.nextLine(); // Skip header row
             while (in.hasNextLine()) {
@@ -44,10 +43,8 @@ public class CsvFile {
                 String mcpName = in.next();
                 String side = in.next();
                 String comment = in.nextLine().substring(1);
-                srgMemberName2CsvData.put(srgName, new CsvData(srgName, mcpName, Integer.valueOf(side), comment));
+                srgMemberName2CsvData.put(srgName, new CsvData(srgName, mcpName, Integer.parseInt(side), comment));
             }
-        } finally {
-            in.close();
         }
     }
 

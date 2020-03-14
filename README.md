@@ -3,7 +3,7 @@ MCP Mapping Viewer
 A small GUI for viewing the mappings from Minecraft obfuscated code names to MCP code names.
 
 ### Links of Interest
- - [Official Minecraft Forum Thread](http://www.minecraftforum.net/topic/2115030-)
+ - [Official Minecraft Forum Thread](https://www.minecraftforum.net/topic/2115030-)
  - [Binary Downloads](http://bspk.rs/MC/MCPMappingViewer/index.html)
  - [Issue Tracking System](https://github.com/bspkrs/MCPMappingViewer/issues)
  

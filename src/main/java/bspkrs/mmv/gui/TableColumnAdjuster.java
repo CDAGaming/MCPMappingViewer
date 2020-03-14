@@ -1,5 +1,5 @@
 /*
- * As found at http://tips4java.wordpress.com/2008/11/10/table-column-adjuster/
+ * As found at https://tips4java.wordpress.com/2008/11/10/table-column-adjuster/
  * on 11/12/2013
  */
 package bspkrs.mmv.gui;
@@ -34,13 +34,13 @@ import java.util.Map;
  */
 
 public class TableColumnAdjuster implements PropertyChangeListener, TableModelListener {
-    private JTable table;
-    private int spacing;
+    private final JTable table;
+    private final int spacing;
     private boolean isColumnHeaderIncluded;
     private boolean isColumnDataIncluded;
     private boolean isOnlyAdjustLarger;
     private boolean isDynamicAdjustment;
-    private Map<TableColumn, Integer> columnSizes = new HashMap<>();
+    private final Map<TableColumn, Integer> columnSizes = new HashMap<>();
 
     /*
      *  Specify the table and use default spacing
@@ -327,8 +327,8 @@ public class TableColumnAdjuster implements PropertyChangeListener, TableModelLi
      */
     class ColumnAction extends AbstractAction {
         private static final long serialVersionUID = 1L;
-        private boolean isSelectedColumn;
-        private boolean isAdjust;
+        private final boolean isSelectedColumn;
+        private final boolean isAdjust;
 
         public ColumnAction(boolean isSelectedColumn, boolean isAdjust) {
             this.isSelectedColumn = isSelectedColumn;
@@ -363,8 +363,8 @@ public class TableColumnAdjuster implements PropertyChangeListener, TableModelLi
      */
     class ToggleAction extends AbstractAction {
         private static final long serialVersionUID = 1L;
-        private boolean isToggleDynamic;
-        private boolean isToggleLarger;
+        private final boolean isToggleDynamic;
+        private final boolean isToggleLarger;
 
         public ToggleAction(boolean isToggleDynamic, boolean isToggleLarger) {
             this.isToggleDynamic = isToggleDynamic;
