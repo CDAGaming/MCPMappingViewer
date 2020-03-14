@@ -100,6 +100,6 @@ public class BrowseActionListener implements ActionListener
             comboBox.setSelectedItem(path);
         }
 
-        defaultDir.val = new File((String) comboBox.getSelectedItem());
+        defaultDir.val = new File(comboBox.getSelectedItem() != null ? comboBox.getSelectedItem().toString() : "");
     }
 }

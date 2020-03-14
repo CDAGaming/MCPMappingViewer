@@ -153,8 +153,8 @@ public class AppVersionChecker
 
     public static String[] loadTextFromURL(URL url, String[] defaultValue, int timeoutMS)
     {
-        List<String> arraylist = new ArrayList<String>();
-        Scanner scanner = null;
+        List<String> arraylist = new ArrayList<>();
+        Scanner scanner;
         try
         {
             URLConnection uc = url.openConnection();
@@ -172,6 +172,6 @@ public class AppVersionChecker
             arraylist.add(scanner.nextLine());
         }
         scanner.close();
-        return arraylist.toArray(new String[arraylist.size()]);
+        return arraylist.toArray(new String[0]);
     }
 }

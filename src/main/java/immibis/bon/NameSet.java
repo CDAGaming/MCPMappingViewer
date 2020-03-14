@@ -20,14 +20,14 @@ package immibis.bon;
  */
 public class NameSet
 {
-    public static enum Type
+    public enum Type
     {
         OBF,
         SRG,
         MCP
     }
 
-    public static enum Side
+    public enum Side
     {
         UNIVERSAL,
         CLIENT,

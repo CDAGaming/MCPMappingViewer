@@ -107,10 +107,10 @@ public class MappingGui extends JFrame
     private final static String                 PREFS_KEY_METHOD_SORT = "methodSort";
     private final static String                 PREFS_KEY_PARAM_SORT  = "paramSort";
     private final static String                 PREFS_KEY_FIELD_SORT  = "fieldSort";
-    private final List<RowSorter.SortKey>       classSort             = new ArrayList<RowSorter.SortKey>();
-    private final List<RowSorter.SortKey>       methodSort            = new ArrayList<RowSorter.SortKey>();
-    private final List<RowSorter.SortKey>       paramSort             = new ArrayList<RowSorter.SortKey>();
-    private final List<RowSorter.SortKey>       fieldSort             = new ArrayList<RowSorter.SortKey>();
+    private final List<RowSorter.SortKey>       classSort             = new ArrayList<>();
+    private final List<RowSorter.SortKey>       methodSort            = new ArrayList<>();
+    private final List<RowSorter.SortKey>       paramSort             = new ArrayList<>();
+    private final List<RowSorter.SortKey>       fieldSort             = new ArrayList<>();
     private JTable                              tblClasses;
     private JTable                              tblMethods;
     private JTable                              tblFields;
@@ -131,7 +131,7 @@ public class MappingGui extends JFrame
         @SuppressWarnings("rawtypes")
         Class[]                   columnTypes      = new Class[] { String.class, String.class, String.class };
 
-        @SuppressWarnings({ "unchecked", "rawtypes" })
+        @SuppressWarnings({ "rawtypes" })
         @Override
         public Class getColumnClass(int columnIndex) { return columnTypes[columnIndex]; }
 
@@ -146,7 +146,7 @@ public class MappingGui extends JFrame
         @SuppressWarnings("rawtypes")
         Class[]                   columnTypes      = new Class[] { String.class, String.class, String.class, String.class, String.class };
 
-        @SuppressWarnings({ "unchecked", "rawtypes" })
+        @SuppressWarnings({ "rawtypes" })
         @Override
         public Class getColumnClass(int columnIndex) { return columnTypes[columnIndex]; }
 
@@ -161,7 +161,7 @@ public class MappingGui extends JFrame
         @SuppressWarnings("rawtypes")
         Class[]                   columnTypes      = new Class[] { String.class, String.class, String.class };
 
-        @SuppressWarnings({ "unchecked", "rawtypes" })
+        @SuppressWarnings({ "rawtypes" })
         @Override
         public Class getColumnClass(int columnIndex) { return columnTypes[columnIndex]; }
 
@@ -176,7 +176,7 @@ public class MappingGui extends JFrame
         @SuppressWarnings("rawtypes")
         Class[]                   columnTypes      = new Class[] { String.class, String.class, String.class, String.class };
 
-        @SuppressWarnings({ "unchecked", "rawtypes" })
+        @SuppressWarnings({ "rawtypes" })
         @Override
         public Class getColumnClass(int columnIndex) { return columnTypes[columnIndex]; }
 
@@ -192,41 +192,26 @@ public class MappingGui extends JFrame
         for (int i = 0; i < Math.min(cmbFilter.getItemCount(), 20); i++)
             prefs.put(PREFS_KEY_FILTER + i, cmbFilter.getItemAt(i));
 
+        sortRowPrefs(tblClasses, PREFS_KEY_CLASS_SORT, tblMethods, PREFS_KEY_METHOD_SORT);
+
+        sortRowPrefs(tblParams, PREFS_KEY_PARAM_SORT, tblFields, PREFS_KEY_FIELD_SORT);
+    }
+
+    private void sortRowPrefs(JTable tblClasses, String prefsKeyClassSort, JTable tblMethods, String prefsKeyMethodSort) {
+        sortTablePrefs(tblClasses, prefsKeyClassSort);
+
+        sortTablePrefs(tblMethods, prefsKeyMethodSort);
+    }
+
+    private void sortTablePrefs(JTable tblClasses, String prefsKeyClassSort) {
         if (tblClasses.getRowSorter().getSortKeys().size() > 0)
         {
             int i = tblClasses.getRowSorter().getSortKeys().get(0).getColumn() + 1;
             SortOrder order = tblClasses.getRowSorter().getSortKeys().get(0).getSortOrder();
-            prefs.putInt(PREFS_KEY_CLASS_SORT, order == SortOrder.DESCENDING ? i * -1 : i);
+            prefs.putInt(prefsKeyClassSort, order == SortOrder.DESCENDING ? i * -1 : i);
         }
         else
-            prefs.putInt(PREFS_KEY_CLASS_SORT, 1);
-
-        if (tblMethods.getRowSorter().getSortKeys().size() > 0)
-        {
-            int i = tblMethods.getRowSorter().getSortKeys().get(0).getColumn() + 1;
-            SortOrder order = tblMethods.getRowSorter().getSortKeys().get(0).getSortOrder();
-            prefs.putInt(PREFS_KEY_METHOD_SORT, order == SortOrder.DESCENDING ? i * -1 : i);
-        }
-        else
-            prefs.putInt(PREFS_KEY_METHOD_SORT, 1);
-
-        if (tblParams.getRowSorter().getSortKeys().size() > 0)
-        {
-            int i = tblParams.getRowSorter().getSortKeys().get(0).getColumn() + 1;
-            SortOrder order = tblParams.getRowSorter().getSortKeys().get(0).getSortOrder();
-            prefs.putInt(PREFS_KEY_PARAM_SORT, order == SortOrder.DESCENDING ? i * -1 : i);
-        }
-        else
-            prefs.putInt(PREFS_KEY_PARAM_SORT, 1);
-
-        if (tblFields.getRowSorter().getSortKeys().size() > 0)
-        {
-            int i = tblFields.getRowSorter().getSortKeys().get(0).getColumn() + 1;
-            SortOrder order = tblFields.getRowSorter().getSortKeys().get(0).getSortOrder();
-            prefs.putInt(PREFS_KEY_FIELD_SORT, order == SortOrder.DESCENDING ? i * -1 : i);
-        }
-        else
-            prefs.putInt(PREFS_KEY_FIELD_SORT, 1);
+            prefs.putInt(prefsKeyClassSort, 1);
     }
 
     private void loadPrefs(boolean sortOnly)
@@ -261,20 +246,19 @@ public class MappingGui extends JFrame
         fieldSort.clear();
 
         int i = prefs.getInt(PREFS_KEY_CLASS_SORT, 1);
+        sortClassPrefs(i, classSort, tblClasses, PREFS_KEY_METHOD_SORT, methodSort, tblMethods);
+
+        i = prefs.getInt(PREFS_KEY_PARAM_SORT, 1);
+        sortClassPrefs(i, paramSort, tblParams, PREFS_KEY_FIELD_SORT, fieldSort, tblFields);
+    }
+
+    private void sortClassPrefs(int i, List<RowSorter.SortKey> classSort, JTable tblClasses, String prefsKeyMethodSort, List<RowSorter.SortKey> methodSort, JTable tblMethods) {
         classSort.add(new RowSorter.SortKey(Math.abs(i) - 1, i > 0 ? SortOrder.ASCENDING : SortOrder.DESCENDING));
         tblClasses.getRowSorter().setSortKeys(classSort);
 
-        i = prefs.getInt(PREFS_KEY_METHOD_SORT, 1);
+        i = prefs.getInt(prefsKeyMethodSort, 1);
         methodSort.add(new RowSorter.SortKey(Math.abs(i) - 1, i > 0 ? SortOrder.ASCENDING : SortOrder.DESCENDING));
         tblMethods.getRowSorter().setSortKeys(methodSort);
-
-        i = prefs.getInt(PREFS_KEY_PARAM_SORT, 1);
-        paramSort.add(new RowSorter.SortKey(Math.abs(i) - 1, i > 0 ? SortOrder.ASCENDING : SortOrder.DESCENDING));
-        tblParams.getRowSorter().setSortKeys(paramSort);
-
-        i = prefs.getInt(PREFS_KEY_FIELD_SORT, 1);
-        fieldSort.add(new RowSorter.SortKey(Math.abs(i) - 1, i > 0 ? SortOrder.ASCENDING : SortOrder.DESCENDING));
-        tblFields.getRowSorter().setSortKeys(fieldSort);
     }
 
     private void checkForUpdates()
@@ -300,7 +284,7 @@ public class MappingGui extends JFrame
             // Set System L&F
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
         }
-        catch (Throwable e)
+        catch (Throwable ignored)
         {}
         EventQueue.invokeLater(new Runnable()
         {
@@ -322,7 +306,7 @@ public class MappingGui extends JFrame
 
     private static String getPrintableStackTrace(Throwable e, Set<StackTraceElement> stopAt)
     {
-        String s = e.toString();
+        StringBuilder s = new StringBuilder(e.toString());
         int numPrinted = 0;
         for (StackTraceElement ste : e.getStackTrace())
         {
@@ -331,7 +315,7 @@ public class MappingGui extends JFrame
                 stopHere = true;
             else
             {
-                s += "\n    at " + ste.toString();
+                s.append("\n    at ").append(ste.toString());
                 numPrinted++;
                 if (ste.getClassName().startsWith("javax.swing."))
                     stopHere = true;
@@ -340,25 +324,25 @@ public class MappingGui extends JFrame
             if (stopHere)
             {
                 int numHidden = e.getStackTrace().length - numPrinted;
-                s += "\n    ... " + numHidden + " more";
+                s.append("\n    ... ").append(numHidden).append(" more");
                 break;
             }
         }
-        return s;
+        return s.toString();
     }
 
     private static String getStackTraceMessage(String prefix, Throwable e)
     {
-        String s = prefix;
+        StringBuilder s = new StringBuilder(prefix);
 
-        s += "\n" + getPrintableStackTrace(e, Collections.<StackTraceElement> emptySet());
+        s.append("\n").append(getPrintableStackTrace(e, Collections.<StackTraceElement>emptySet()));
         while (e.getCause() != null)
         {
-            Set<StackTraceElement> stopAt = new HashSet<StackTraceElement>(Arrays.asList(e.getStackTrace()));
+            Set<StackTraceElement> stopAt = new HashSet<>(Arrays.asList(e.getStackTrace()));
             e = e.getCause();
-            s += "\nCaused by: " + getPrintableStackTrace(e, stopAt);
+            s.append("\nCaused by: ").append(getPrintableStackTrace(e, stopAt));
         }
-        return s;
+        return s.toString();
     }
 
     /**
@@ -491,7 +475,7 @@ public class MappingGui extends JFrame
         pnlControls.setSize(new Dimension(0, 40));
         pnlControls.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 2));
 
-        cmbMappingVersion = new JComboBox<String>(new DefaultComboBoxModel<String>());
+        cmbMappingVersion = new JComboBox<>(new DefaultComboBoxModel<String>());
         cmbMappingVersion.setEditable(false);
         cmbMappingVersion.setPreferredSize(new Dimension(320, 20));
         cmbMappingVersion.addItemListener(new MappingVersionsComboItemChanged());
@@ -514,7 +498,7 @@ public class MappingGui extends JFrame
                         cmbMappingVersion.addItem(s);
                     }
                 }
-                catch (IOException exc)
+                catch (IOException ignored)
                 {}
             }
         });
@@ -550,7 +534,7 @@ public class MappingGui extends JFrame
         JLabel lblFilter = new JLabel("Search");
         pnlFilter.add(lblFilter);
 
-        cmbFilter = new JComboBox<String>();
+        cmbFilter = new JComboBox<>();
         cmbFilter.setEditable(true);
         cmbFilter.setPreferredSize(new Dimension(300, 20));
         cmbFilter.setMaximumRowCount(10);
@@ -691,20 +675,24 @@ public class MappingGui extends JFrame
 
             System.err.println(s);
 
-            final String errMsg = s;
-            SwingUtilities.invokeLater(new Runnable()
-            {
-                @Override
-                public void run()
-                {
-                    progressBar.setString(" ");
-                    progressBar.setValue(0);
-
-                    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(errMsg), null);
-                    JOptionPane.showMessageDialog(MappingGui.this, errMsg, "MMV - Error", JOptionPane.ERROR_MESSAGE);
-                }
-            });
+            invokeException(s);
         }
+    }
+
+    private void invokeException(String s) {
+        final String errMsg = s;
+        SwingUtilities.invokeLater(new Runnable()
+        {
+            @Override
+            public void run()
+            {
+                progressBar.setString(" ");
+                progressBar.setValue(0);
+
+                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(errMsg), null);
+                JOptionPane.showMessageDialog(MappingGui.this, errMsg, "MMV - Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
     }
 
     class MappingVersionsComboItemChanged implements ItemListener
@@ -728,7 +716,7 @@ public class MappingGui extends JFrame
         {
             if (e.getActionCommand().equals("comboBoxEdited"))
             {
-                String filterText = cmbFilter.getSelectedItem().toString();
+                String filterText = cmbFilter.getSelectedItem() != null ? cmbFilter.getSelectedItem().toString() : null;
 
                 if (filterText == null || filterText.trim().isEmpty())
                     return;
@@ -828,7 +816,7 @@ public class MappingGui extends JFrame
             if (curTask != null && curTask.isAlive() || cmbFilter.getItemCount() == 0)
                 return;
 
-            String filterText = cmbFilter.getSelectedItem().toString();
+            String filterText = cmbFilter.getSelectedItem() != null ? cmbFilter.getSelectedItem().toString() : null;
 
             if (filterText != null && !filterText.trim().isEmpty())
             {
@@ -1011,19 +999,7 @@ public class MappingGui extends JFrame
 
                         crashed = true;
 
-                        final String errMsg = s;
-                        SwingUtilities.invokeLater(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                progressBar.setString(" ");
-                                progressBar.setValue(0);
-
-                                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(errMsg), null);
-                                JOptionPane.showMessageDialog(MappingGui.this, errMsg, "MMV - Error", JOptionPane.ERROR_MESSAGE);
-                            }
-                        });
+                        invokeException(s);
                     }
                     finally
                     {
@@ -1192,19 +1168,7 @@ public class MappingGui extends JFrame
 
                         crashed = true;
 
-                        final String errMsg = s;
-                        SwingUtilities.invokeLater(new Runnable()
-                        {
-                            @Override
-                            public void run()
-                            {
-                                progressBar.setString(" ");
-                                progressBar.setValue(0);
-
-                                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(errMsg), null);
-                                JOptionPane.showMessageDialog(MappingGui.this, errMsg, "MMV - Error", JOptionPane.ERROR_MESSAGE);
-                            }
-                        });
+                        invokeException(s);
                     }
                     finally
                     {
@@ -1240,10 +1204,8 @@ public class MappingGui extends JFrame
         JLabel label = new JLabel();
         Font font = label.getFont();
 
-        StringBuffer style = new StringBuffer("font-family:" + font.getFamily() + ";");
-        style.append("font-weight:" + (font.isBold() ? "bold" : "normal") + ";");
-        style.append("font-size:" + font.getSize() + "pt;");
-
+        String style = "font-family:" + font.getFamily() + ";" + "font-weight:" + (font.isBold() ? "bold" : "normal") + ";" +
+                "font-size:" + font.getSize() + "pt;";
         JEditorPane ep = new JEditorPane("text/html", "<html><body style=\"" + style + "\">" + message.toString() + "</body></html>");
 
         ep.addHyperlinkListener(new HyperlinkListener()

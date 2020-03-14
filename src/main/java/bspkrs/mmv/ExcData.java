@@ -120,14 +120,14 @@ public class ExcData implements Comparable<ExcData>
         Pattern pattern = Pattern.compile("\\[*L[^;]+;|\\[[ZBCSIFDJ]|[ZBCSIFDJ]");
         Matcher matcher = pattern.matcher(x0);
 
-        ArrayList<String> listMatches = new ArrayList<String>();
+        ArrayList<String> listMatches = new ArrayList<>();
 
         while (matcher.find())
         {
             listMatches.add(matcher.group());
         }
 
-        return listMatches.toArray(new String[listMatches.size()]);
+        return listMatches.toArray(new String[0]);
     }
 
     public static String[] genParamNames(String srgId, String[] paramTypes, boolean isStatic)

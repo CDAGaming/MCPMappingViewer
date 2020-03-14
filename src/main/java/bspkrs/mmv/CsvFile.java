@@ -69,17 +69,9 @@ public class CsvFile
     {
         if (isDirty)
         {
-            if (file.exists())
-            {
-                File fileBak = new File(file.getAbsolutePath() + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".bak");
-                file.renameTo(fileBak);
-            }
-
-            file.createNewFile();
+            ParamCsvFile.writeBackup(file, headerLine);
 
             PrintWriter out = new PrintWriter(new FileWriter(file));
-            out.println(headerLine);
-
             for (CsvData data : srgMemberName2CsvData.values())
                 out.println(data.toCsv());
 

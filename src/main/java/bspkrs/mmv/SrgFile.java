@@ -30,14 +30,14 @@ import java.util.TreeSet;
 public class SrgFile
 {
     // All maps should be inter-connected to reference a single set of objects
-    public final Map<String, ClassSrgData>             srgClassName2ClassData   = new TreeMap<String, ClassSrgData>();            // full/pkg/ClassSrgName -> ClassSrgData
-    public final Map<String, Set<ClassSrgData>>        srgPkg2ClassDataSet      = new TreeMap<String, Set<ClassSrgData>>();       // full/pkg -> Set<ClassSrgData>
-    public final Map<String, FieldSrgData>             srgFieldName2FieldData   = new TreeMap<String, FieldSrgData>();            // field_12345_a -> FieldSrgData
-    public final Map<String, MethodSrgData>            srgMethodName2MethodData = new TreeMap<String, MethodSrgData>();           // func_12345_a -> MethodSrgData
-    public final Map<ClassSrgData, Set<MethodSrgData>> class2MethodDataSet      = new TreeMap<ClassSrgData, Set<MethodSrgData>>();
-    public final Map<ClassSrgData, Set<FieldSrgData>>  class2FieldDataSet       = new TreeMap<ClassSrgData, Set<FieldSrgData>>();
-    public final Map<String, ClassSrgData>             srgMethodName2ClassData  = new TreeMap<String, ClassSrgData>();            // func_12345_a -> ClassSrgData
-    public final Map<String, ClassSrgData>             srgFieldName2ClassData   = new TreeMap<String, ClassSrgData>();            // field_12345_a -> ClassSrgData
+    public final Map<String, ClassSrgData>             srgClassName2ClassData   = new TreeMap<>();            // full/pkg/ClassSrgName -> ClassSrgData
+    public final Map<String, Set<ClassSrgData>>        srgPkg2ClassDataSet      = new TreeMap<>();            // full/pkg -> Set<ClassSrgData>
+    public final Map<String, FieldSrgData>             srgFieldName2FieldData   = new TreeMap<>();            // field_12345_a -> FieldSrgData
+    public final Map<String, MethodSrgData>            srgMethodName2MethodData = new TreeMap<>();            // func_12345_a -> MethodSrgData
+    public final Map<ClassSrgData, Set<MethodSrgData>> class2MethodDataSet      = new TreeMap<>();
+    public final Map<ClassSrgData, Set<FieldSrgData>>  class2FieldDataSet       = new TreeMap<>();
+    public final Map<String, ClassSrgData>             srgMethodName2ClassData  = new TreeMap<>();            // func_12345_a -> ClassSrgData
+    public final Map<String, ClassSrgData>             srgFieldName2ClassData   = new TreeMap<>();            // field_12345_a -> ClassSrgData
 
     SrgFile() {} // FIXME Needed so that TSrgFile can extend SrgFile. A shared interface/abstract probably makes more sense
 
@@ -49,13 +49,9 @@ public class SrgFile
 
     public SrgFile(File f, ExcFile excFile, StaticMethodsFile staticMethods) throws IOException
     {
-        Scanner in = new Scanner(new BufferedReader(new FileReader(f)));
-        try
-        {
-            while (in.hasNextLine())
-            {
-                if (in.hasNext("CL:"))
-                {
+        try (Scanner in = new Scanner(new BufferedReader(new FileReader(f)))) {
+            while (in.hasNextLine()) {
+                if (in.hasNext("CL:")) {
                     // CL: a net/minecraft/util/EnumChatFormatting
                     in.next(); // skip CL:
                     String obf = in.next();
@@ -76,9 +72,7 @@ public class SrgFile
 
                     if (!class2FieldDataSet.containsKey(classData))
                         class2FieldDataSet.put(classData, new TreeSet<FieldSrgData>());
-                }
-                else if (in.hasNext("FD:"))
-                {
+                } else if (in.hasNext("FD:")) {
                     // FD: aql/c net/minecraft/block/BlockStoneBrick/field_94408_c #C
                     in.next(); // skip FD:
                     String[] obf = in.next().split("/");
@@ -95,9 +89,7 @@ public class SrgFile
                     srgFieldName2FieldData.put(srgName, fieldData);
                     class2FieldDataSet.get(srgClassName2ClassData.get(srgPkg + "/" + srgOwner)).add(fieldData);
                     srgFieldName2ClassData.put(srgName, srgClassName2ClassData.get(srgPkg + "/" + srgOwner));
-                }
-                else if (in.hasNext("MD:"))
-                {
+                } else if (in.hasNext("MD:")) {
                     // MD: aor/a (Lmt;)V net/minecraft/block/BlockHay/func_94332_a (Lnet/minecraft/client/renderer/texture/IconRegister;)V #C
                     in.next(); // skip MD:
                     String[] obf = in.next().split("/");
@@ -121,20 +113,14 @@ public class SrgFile
                     ExcData toAdd = new ExcData(srgOwner, srgName, srgDescriptor, new String[0], staticMethods.contains(srgName));
                     ExcData existing = excFile.srgMethodName2ExcData.get(srgName);
 
-                    if ((existing == null) || (existing.getParameters().length < toAdd.getParameters().length))
-                    {
+                    if ((existing == null) || (existing.getParameters().length < toAdd.getParameters().length)) {
                         excFile.srgMethodName2ExcData.put(srgName, toAdd);
                         for (String parameter : toAdd.getParameters())
                             excFile.srgParamName2ExcData.put(parameter, toAdd);
                     }
-                }
-                else
+                } else
                     in.nextLine();
             }
-        }
-        finally
-        {
-            in.close();
         }
     }
 }

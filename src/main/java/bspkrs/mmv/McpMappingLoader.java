@@ -66,10 +66,10 @@ public class McpMappingLoader
     private CsvFile                                      csvFieldData, csvMethodData;
     private ParamCsvFile                                 csvParamData;
     private final MappingGui                             parentGui;
-    private final Map<String, McpBotCommand>             commandMap              = new TreeMap<String, McpBotCommand>();                                                                // srgName -> McpBotCommand
-    public final Map<MethodSrgData, CsvData>             srgMethodData2CsvData   = new TreeMap<MethodSrgData, CsvData>();
-    public final Map<FieldSrgData, CsvData>              srgFieldData2CsvData    = new TreeMap<FieldSrgData, CsvData>();
-    public final Map<ExcData, Map<String, ParamCsvData>> excData2MapParamCsvData = new TreeMap<ExcData, Map<String, ParamCsvData>>();
+    private final Map<String, McpBotCommand>             commandMap              = new TreeMap<>();                                                                // srgName -> McpBotCommand
+    public final Map<MethodSrgData, CsvData>             srgMethodData2CsvData   = new TreeMap<>();
+    public final Map<FieldSrgData, CsvData>              srgFieldData2CsvData    = new TreeMap<>();
+    public final Map<ExcData, Map<String, ParamCsvData>> excData2MapParamCsvData = new TreeMap<>();
 
     public McpMappingLoader(MappingGui parentGui, String mappingString, IProgressListener progress) throws IOException, CantLoadMCPMappingException, NoSuchAlgorithmException, DigestException
     {
@@ -181,7 +181,7 @@ public class McpMappingLoader
         {
             if (!excData2MapParamCsvData.containsKey(excData.getValue()) && excData.getValue().getParameters().length > 0)
             {
-                TreeMap<String, ParamCsvData> params = new TreeMap<String, ParamCsvData>();
+                TreeMap<String, ParamCsvData> params = new TreeMap<>();
                 for (String srgName : excData.getValue().getParameters())
                     if (csvParamData.hasCsvDataForKey(srgName))
                         params.put(srgName, csvParamData.getCsvDataForKey(srgName));
@@ -227,15 +227,15 @@ public class McpMappingLoader
 
     public String getBotCommands(boolean clear)
     {
-        String r = "";
+        StringBuilder r = new StringBuilder();
 
         for (McpBotCommand command : commandMap.values())
-            r += command.toString() + "\n";
+            r.append(command.toString()).append("\n");
 
         if (clear)
             commandMap.clear();
 
-        return r;
+        return r.toString();
     }
 
     public boolean hasPendingCommands()
@@ -254,7 +254,7 @@ public class McpMappingLoader
             progress.set(0);
         }
 
-        Set<ClassSrgData> results = new TreeSet<ClassSrgData>();
+        Set<ClassSrgData> results = new TreeSet<>();
 
         // Search Class objects
         for (ClassSrgData classData : srgFileData.srgClassName2ClassData.values())
@@ -330,7 +330,7 @@ public class McpMappingLoader
     }
 
     @SuppressWarnings("rawtypes")
-    public class ClassModel extends AbstractTableModel
+    public static class ClassModel extends AbstractTableModel
     {
         private static final long              serialVersionUID = 1L;
         public final String[]                  columnNames      = { "Pkg name", "SRG name", "Obf name" };
@@ -595,7 +595,7 @@ public class McpMappingLoader
                 return;
 
             ExcData excData = excFileData.srgParamName2ExcData.get(srgName);
-            ParamCsvData csvData = null;
+            ParamCsvData csvData;
             boolean isForced = csvParamData.hasCsvDataForKey(srgName);
 
             if (isForced)

@@ -38,29 +38,22 @@ public class ParamCsvFile
     public ParamCsvFile(File file) throws IOException
     {
         this.file = file;
-        srgParamName2ParamCsvData = new TreeMap<String, ParamCsvData>();
+        srgParamName2ParamCsvData = new TreeMap<>();
         readFromFile();
         isDirty = false;
     }
 
     public void readFromFile() throws IOException
     {
-        Scanner in = new Scanner(new BufferedReader(new FileReader(file)));
-        try
-        {
+        try (Scanner in = new Scanner(new BufferedReader(new FileReader(file)))) {
             in.useDelimiter(",");
             headerLine = in.nextLine(); // Skip header row
-            while (in.hasNextLine())
-            {
+            while (in.hasNextLine()) {
                 String srgName = in.next();
                 String mcpName = in.next();
                 String side = in.nextLine().substring(1);
-                srgParamName2ParamCsvData.put(srgName, new ParamCsvData(srgName, mcpName, Integer.valueOf(side)));
+                srgParamName2ParamCsvData.put(srgName, new ParamCsvData(srgName, mcpName, Integer.parseInt(side)));
             }
-        }
-        finally
-        {
-            in.close();
         }
     }
 
@@ -68,16 +61,8 @@ public class ParamCsvFile
     {
         if (isDirty)
         {
-            if (file.exists())
-            {
-                File fileBak = new File(file.getAbsolutePath() + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".bak");
-                file.renameTo(fileBak);
-            }
-
-            file.createNewFile();
-
+            writeBackup(file, headerLine);
             PrintWriter out = new PrintWriter(new FileWriter(file));
-            out.println(headerLine);
 
             for (ParamCsvData data : srgParamName2ParamCsvData.values())
                 out.println(data.toCsv());
@@ -86,6 +71,23 @@ public class ParamCsvFile
 
             isDirty = false;
         }
+    }
+
+    static void writeBackup(File file, String headerLine) throws IOException {
+        if (file.exists())
+        {
+            File fileBak = new File(file.getAbsolutePath() + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".bak");
+            if (file.renameTo(fileBak)) {
+                //
+            }
+        }
+
+        if (file.createNewFile()) {
+            //
+        }
+
+        PrintWriter out = new PrintWriter(new FileWriter(file));
+        out.println(headerLine);
     }
 
     public boolean hasCsvDataForKey(String srgName)

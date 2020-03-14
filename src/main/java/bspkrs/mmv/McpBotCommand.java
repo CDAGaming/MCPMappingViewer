@@ -9,14 +9,14 @@ public class McpBotCommand
         SP,
         FSF,
         FSM,
-        FSP;
+        FSP
     }
 
     public enum MemberType
     {
         FIELD,
         METHOD,
-        PARAM;
+        PARAM
     }
 
     public static BotCommand getCommand(MemberType type, boolean isForced)

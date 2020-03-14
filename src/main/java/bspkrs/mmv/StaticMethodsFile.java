@@ -31,23 +31,16 @@ public class StaticMethodsFile
     public StaticMethodsFile(File file) throws IOException
     {
         this.file = file;
-        staticMethods = new ArrayList<String>();
+        staticMethods = new ArrayList<>();
         readFromFile();
     }
 
     public void readFromFile() throws IOException
     {
-        Scanner in = new Scanner(new BufferedReader(new FileReader(file)));
-        try
-        {
-            while (in.hasNextLine())
-            {
+        try (Scanner in = new Scanner(new BufferedReader(new FileReader(file)))) {
+            while (in.hasNextLine()) {
                 staticMethods.add(in.nextLine());
             }
-        }
-        finally
-        {
-            in.close();
         }
     }
 

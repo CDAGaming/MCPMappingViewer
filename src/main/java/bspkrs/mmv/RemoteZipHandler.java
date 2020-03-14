@@ -87,24 +87,18 @@ public class RemoteZipHandler
         {
             // download zip
             File localZip = new File(localDir, zipFileName);
-            if (localZip.exists())
-                localZip.delete();
-            OutputStream output = new FileOutputStream(localZip);
-            try
-            {
+            if (localZip.exists() && localZip.delete()) {
+                //
+            }
+            try (OutputStream output = new FileOutputStream(localZip)) {
                 URLConnection uc = zipUrl.openConnection();
                 uc.addRequestProperty("User-Agent", "MMV/" + MappingGui.VERSION_NUMBER);
                 byte[] buffer = new byte[1024]; // Or whatever
                 int bytesRead;
-                try (InputStream is = uc.getInputStream())
-                {
+                try (InputStream is = uc.getInputStream()) {
                     while ((bytesRead = is.read(buffer)) > 0)
                         output.write(buffer, 0, bytesRead);
                 }
-            }
-            finally
-            {
-                output.close();
             }
 
             // Check hash of downloaded file to ensure we received it correctly
@@ -117,15 +111,19 @@ public class RemoteZipHandler
 
             // extract zip file
             extractZip(localZip, localDir);
-            if (localZip.exists())
-                localZip.delete();
+            if (localZip.exists() && localZip.delete()) {
+                //
+            }
 
             // save new hash after successful extract
             if (digestType != null && !remoteHash.isEmpty())
             {
-                if (digestFile.exists())
-                    digestFile.delete();
-                digestFile.createNewFile();
+                if (digestFile.exists() && digestFile.delete()) {
+                    //
+                }
+                if (digestFile.createNewFile()) {
+                    //
+                }
                 PrintWriter out = new PrintWriter(new FileWriter(digestFile));
                 out.print(remoteHash);
                 out.close();
@@ -135,7 +133,7 @@ public class RemoteZipHandler
 
     public static String[] loadTextFromURL(URL url, String[] defaultValue)
     {
-        List<String> arraylist = new ArrayList<String>();
+        List<String> arraylist = new ArrayList<>();
         Scanner scanner = null;
         try
         {
@@ -158,31 +156,21 @@ public class RemoteZipHandler
             if (scanner != null)
                 scanner.close();
         }
-        return arraylist.toArray(new String[arraylist.size()]);
+        return arraylist.toArray(new String[0]);
     }
 
     public static String[] loadTextFromFile(File file, String[] defaultValue)
     {
-        ArrayList<String> lines = new ArrayList<String>();
+        ArrayList<String> lines = new ArrayList<>();
 
-        Scanner scanner = null;
-        try
-        {
-            scanner = new Scanner(file);
+        try (Scanner scanner = new Scanner(file)) {
             while (scanner.hasNextLine())
                 lines.add(scanner.nextLine());
-        }
-        catch (FileNotFoundException e)
-        {
+        } catch (FileNotFoundException e) {
             return defaultValue;
         }
-        finally
-        {
-            if (scanner != null)
-                scanner.close();
-        }
 
-        return lines.toArray(new String[lines.size()]);
+        return lines.toArray(new String[0]);
     }
 
     public static String getFileDigest(InputStream is, String digestType) throws NoSuchAlgorithmException, IOException
@@ -200,17 +188,17 @@ public class RemoteZipHandler
         byte[] mdbytes = md.digest();
 
         //convert the byte to hex format
-        StringBuffer sb = new StringBuffer("");
-        for (int i = 0; i < mdbytes.length; i++)
-            sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
+        StringBuilder sb = new StringBuilder("");
+        for (byte mdbyte : mdbytes) sb.append(Integer.toString((mdbyte & 0xff) + 0x100, 16).substring(1));
         return sb.toString();
     }
 
     public static void extractZip(File zipFile, File destDir) throws IOException
     {
         byte[] buffer = new byte[1024];
-        if (!destDir.exists())
-            destDir.mkdirs();
+        if (!destDir.exists() && destDir.mkdirs()) {
+            //
+        }
 
         ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
         ZipEntry ze = zis.getNextEntry();
@@ -224,14 +212,19 @@ public class RemoteZipHandler
                 {
                     if (newFile.exists())
                         deleteDirAndContents(newFile);
-                    newFile.mkdirs();
+
+                    if (newFile.mkdirs()) {
+                        //
+                    }
                 }
                 else
                 {
-                    if (newFile.exists())
-                        newFile.delete();
-                    if (newFile.getParentFile() != null && !newFile.getParentFile().exists())
-                        newFile.getParentFile().mkdirs();
+                    if (newFile.exists() && newFile.delete()) {
+                        //
+                    }
+                    if (newFile.getParentFile() != null && !newFile.getParentFile().exists() && newFile.getParentFile().mkdirs()) {
+                        //
+                    }
                     FileOutputStream fos = new FileOutputStream(newFile);
                     int len;
                     while ((len = zis.read(buffer)) > 0)
@@ -254,11 +247,12 @@ public class RemoteZipHandler
         if (dir.isDirectory())
         {
             String[] children = dir.list();
-            for (int i = 0; i < children.length; i++)
-            {
-                boolean success = deleteDirAndContents(new File(dir, children[i]));
-                if (!success)
-                    return false;
+            if (children != null) {
+                for (String child : children) {
+                    boolean success = deleteDirAndContents(new File(dir, child));
+                    if (!success)
+                        return false;
+                }
             }
         }
         return dir.delete();

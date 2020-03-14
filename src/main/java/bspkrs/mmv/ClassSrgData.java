@@ -17,7 +17,7 @@ package bspkrs.mmv;
 
 public class ClassSrgData implements Comparable<ClassSrgData>
 {
-    public static enum SortType
+    public enum SortType
     {
         PKG,
         OBF
