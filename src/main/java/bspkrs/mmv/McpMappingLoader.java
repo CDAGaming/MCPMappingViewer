@@ -35,12 +35,6 @@ public class McpMappingLoader {
     public final Map<FieldSrgData, CsvData> srgFieldData2CsvData = new TreeMap<>();
     public final Map<ExcData, Map<String, ParamCsvData>> excData2MapParamCsvData = new TreeMap<>();
     private final File baseDir = new File(new File(System.getProperty("user.home")), ".cache/MCPMappingViewer");
-    private final String baseSrgDir = "{mc_ver}";
-    private final String baseMappingDir = "{mc_ver}/{channel}_{map_ver}";
-    private final String baseMappingUrl = "http://export.mcpbot.bspk.rs/mcp_{channel}/{map_ver}-{mc_ver}/mcp_{channel}-{map_ver}-{mc_ver}.zip";
-    private final String newBaseSrgUrl = "https://files.minecraftforge.net/maven/de/oceanlabs/mcp/mcp_config/{mc_ver}/mcp_config-{mc_ver}.zip";
-    private final String oldBaseSrgUrl = "http://export.mcpbot.bspk.rs/mcp/{mc_ver}/mcp-{mc_ver}-srg.zip";
-    private final File srgDir;
     private final File mappingDir;
     private final File srgFile;
     private final File excFile;
@@ -49,7 +43,6 @@ public class McpMappingLoader {
     private final Map<String, McpBotCommand> commandMap = new TreeMap<>();                                                                // srgName -> McpBotCommand
     private SrgFile srgFileData;
     private ExcFile excFileData;
-    private StaticMethodsFile staticMethods;
     private CsvFile csvFieldData, csvMethodData;
     private ParamCsvFile csvParamData;
     public McpMappingLoader(MappingGui parentGui, String mappingString, IProgressListener progress) throws IOException, CantLoadMCPMappingException, NoSuchAlgorithmException, DigestException {
@@ -63,14 +56,19 @@ public class McpMappingLoader {
             throw new CantLoadMCPMappingException("Invalid mapping string specified.");
 
         boolean isNew = tokens[0].compareTo("1.13") >= 0;
-        String baseSrgUrl = isNew ? newBaseSrgUrl : oldBaseSrgUrl;
-        String srgFileName = isNew ? "config/joined.tsrg" : "joined.srg";
-        String excFileName = isNew ? "config/exceptions.txt" : "joined.exc";
-        String staticMethodsFileName = isNew ? "config/static_methods.txt" : "static_methods.txt";
+        final String newBaseSrgUrl = "https://files.minecraftforge.net/maven/de/oceanlabs/mcp/mcp_config/{mc_ver}/mcp_config-{mc_ver}.zip";
+        final String oldBaseSrgUrl = "http://export.mcpbot.bspk.rs/mcp/{mc_ver}/mcp-{mc_ver}-srg.zip";
+        final String baseSrgUrl = isNew ? newBaseSrgUrl : oldBaseSrgUrl;
+        final String srgFileName = isNew ? "config/joined.tsrg" : "joined.srg";
+        final String excFileName = isNew ? "config/exceptions.txt" : "joined.exc";
+        final String staticMethodsFileName = isNew ? "config/static_methods.txt" : "static_methods.txt";
 
         progress.set(0, "Fetching SRG data");
-        srgDir = getSubDirForZip(tokens, baseSrgUrl, baseSrgDir);
+        final String baseSrgDir = "{mc_ver}";
+        File srgDir = getSubDirForZip(tokens, baseSrgUrl, baseSrgDir);
         progress.set(1, "Fetching CSV data");
+        String baseMappingDir = "{mc_ver}/{channel}_{map_ver}";
+        String baseMappingUrl = "http://export.mcpbot.bspk.rs/mcp_{channel}/{map_ver}-{mc_ver}/mcp_{channel}-{map_ver}-{mc_ver}.zip";
         mappingDir = getSubDirForZip(tokens, baseMappingUrl, baseMappingDir);
 
         srgFile = new File(srgDir, srgFileName);
@@ -115,7 +113,7 @@ public class McpMappingLoader {
     }
 
     private void loadSrgMapping(boolean newFormat) throws IOException {
-        staticMethods = new StaticMethodsFile(staticMethodsFile);
+        StaticMethodsFile staticMethods = new StaticMethodsFile(staticMethodsFile);
         excFileData = new ExcFile(excFile);
         srgFileData = newFormat
                 ? new TSrgFile(srgFile, excFileData, staticMethods)
@@ -286,16 +284,14 @@ public class McpMappingLoader {
         private final Class[] columnTypes = {String.class, String.class, String.class};
         private final boolean[] isColumnEditable = {false, false, false};
         private final Object[][] data;
-        private final Collection<ClassSrgData> collectionRef;
 
         public ClassModel(Collection<ClassSrgData> map) {
-            collectionRef = map;
 
-            data = new Object[collectionRef.size()][columnNames.length];
+            data = new Object[map.size()][columnNames.length];
 
             int i = 0;
 
-            for (ClassSrgData classData : collectionRef) {
+            for (ClassSrgData classData : map) {
                 data[i][0] = classData.getSrgPkgName();
                 data[i][1] = classData.getSrgName();
                 data[i][2] = classData.getObfName();
@@ -350,16 +346,14 @@ public class McpMappingLoader {
         private final Class[] columnTypes = {String.class, String.class, String.class, String.class, String.class};
         private final boolean[] isColumnEditable = {true, false, false, false, true};
         private final Object[][] data;
-        private final Set<MethodSrgData> setRef;
 
         public MethodModel(Set<MethodSrgData> srgMethodSet) {
-            setRef = srgMethodSet;
 
-            data = new Object[setRef.size()][columnNames.length];
+            data = new Object[srgMethodSet.size()][columnNames.length];
 
             int i = 0;
 
-            for (MethodSrgData methodData : setRef) {
+            for (MethodSrgData methodData : srgMethodSet) {
                 CsvData csvData = srgMethodData2CsvData.get(methodData);
                 if (csvData != null) {
                     data[i][0] = csvData.getMcpName();
@@ -540,16 +534,14 @@ public class McpMappingLoader {
         private final Class[] columnTypes = {String.class, String.class, String.class, String.class};
         private final boolean[] isColumnEditable = {true, false, false, true};
         private final Object[][] data;
-        private final Set<FieldSrgData> setRef;
 
         public FieldModel(Set<FieldSrgData> srgFieldSet) {
-            setRef = srgFieldSet;
 
-            data = new Object[setRef.size()][columnNames.length];
+            data = new Object[srgFieldSet.size()][columnNames.length];
 
             int i = 0;
 
-            for (FieldSrgData fieldData : setRef) {
+            for (FieldSrgData fieldData : srgFieldSet) {
                 CsvData csvData = srgFieldData2CsvData.get(fieldData);
                 if (csvData != null) {
                     data[i][0] = csvData.getMcpName();

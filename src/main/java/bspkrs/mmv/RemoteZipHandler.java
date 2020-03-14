@@ -87,7 +87,7 @@ public class RemoteZipHandler {
         MessageDigest md = MessageDigest.getInstance(digestType);
         byte[] dataBytes = new byte[1024];
 
-        int nread = 0;
+        int nread;
 
         while ((nread = is.read(dataBytes)) != -1)
             md.update(dataBytes, 0, nread);
@@ -97,15 +97,15 @@ public class RemoteZipHandler {
         byte[] mdbytes = md.digest();
 
         //convert the byte to hex format
-        StringBuilder sb = new StringBuilder("");
+        StringBuilder sb = new StringBuilder();
         for (byte mdbyte : mdbytes) sb.append(Integer.toString((mdbyte & 0xff) + 0x100, 16).substring(1));
         return sb.toString();
     }
 
     public static void extractZip(File zipFile, File destDir) throws IOException {
         byte[] buffer = new byte[1024];
-        if (!destDir.exists() && destDir.mkdirs()) {
-            //
+        if (!destDir.exists() && !destDir.mkdirs()) {
+            System.out.println("Failed to create Destination Directory!");
         }
 
         ZipInputStream zis = new ZipInputStream(new FileInputStream(zipFile));
@@ -118,15 +118,15 @@ public class RemoteZipHandler {
                     if (newFile.exists())
                         deleteDirAndContents(newFile);
 
-                    if (newFile.mkdirs()) {
-                        //
+                    if (!newFile.mkdirs()) {
+                        System.out.println("Failed to create Destination File!");
                     }
                 } else {
-                    if (newFile.exists() && newFile.delete()) {
-                        //
+                    if (newFile.exists() && !newFile.delete()) {
+                        System.out.println("Failed to delete Destination File!");
                     }
-                    if (newFile.getParentFile() != null && !newFile.getParentFile().exists() && newFile.getParentFile().mkdirs()) {
-                        //
+                    if (newFile.getParentFile() != null && !newFile.getParentFile().exists() && !newFile.getParentFile().mkdirs()) {
+                        System.out.println("Failed to create Destination Parent Directories!");
                     }
                     FileOutputStream fos = new FileOutputStream(newFile);
                     int len;
@@ -180,8 +180,8 @@ public class RemoteZipHandler {
         if (fetchZip) {
             // download zip
             File localZip = new File(localDir, zipFileName);
-            if (localZip.exists() && localZip.delete()) {
-                //
+            if (localZip.exists() && !localZip.delete()) {
+                System.out.println("Failed to delete local zip file!");
             }
             try (OutputStream output = new FileOutputStream(localZip)) {
                 URLConnection uc = zipUrl.openConnection();
@@ -203,17 +203,17 @@ public class RemoteZipHandler {
 
             // extract zip file
             extractZip(localZip, localDir);
-            if (localZip.exists() && localZip.delete()) {
-                //
+            if (localZip.exists() && !localZip.delete()) {
+                System.out.println("Failed to delete local zip file!");
             }
 
             // save new hash after successful extract
             if (digestType != null && !remoteHash.isEmpty()) {
-                if (digestFile.exists() && digestFile.delete()) {
-                    //
+                if (digestFile.exists() && !digestFile.delete()) {
+                    System.out.println("Failed to delete Digest file!");
                 }
                 if (digestFile.createNewFile()) {
-                    //
+                    System.out.println("Failed to create Digest file!");
                 }
                 PrintWriter out = new PrintWriter(new FileWriter(digestFile));
                 out.print(remoteHash);

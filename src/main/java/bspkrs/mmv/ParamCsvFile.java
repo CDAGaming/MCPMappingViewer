@@ -39,13 +39,13 @@ public class ParamCsvFile {
     static void writeBackup(File file, String headerLine) throws IOException {
         if (file.exists()) {
             File fileBak = new File(file.getAbsolutePath() + "_" + new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date()) + ".bak");
-            if (file.renameTo(fileBak)) {
-                //
+            if (!file.renameTo(fileBak)) {
+                System.out.println("Failed to rename Backup file!");
             }
         }
 
-        if (file.createNewFile()) {
-            //
+        if (!file.createNewFile()) {
+            System.out.println("Failed to create new Backup file");
         }
 
         PrintWriter out = new PrintWriter(new FileWriter(file));

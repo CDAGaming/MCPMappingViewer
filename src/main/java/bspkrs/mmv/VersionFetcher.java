@@ -28,12 +28,12 @@ import java.util.List;
 import java.util.Map;
 
 public class VersionFetcher {
-    private final String jsonUrl = "http://export.mcpbot.bspk.rs/versions.json";
     private List<String> versions;
 
     @SuppressWarnings("unchecked")
     public List<String> getVersions(boolean force) throws IOException {
         if ((versions == null) || force) {
+            final String jsonUrl = "http://export.mcpbot.bspk.rs/versions.json";
             final URL url = new URL(jsonUrl);
             final URLConnection connection = url.openConnection();
             connection.addRequestProperty("User-Agent", "MMV/1.0.0");
